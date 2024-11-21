@@ -1,9 +1,11 @@
+#include "../include/HandleInput.h"
 #include <SDL2/SDL.h>
 #include <curses.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #define PLAYER_START_POS 10;
+#define MOVEMENT_THRESHOLD 8000
 void draw(void);
 
 struct player
@@ -68,7 +70,7 @@ int main(void)
     draw();
 
     mvprintw(my_player.y, my_player.x, "%s", my_player.player_char);
-
+    handle_input();
     while(1)
     {
         draw();
@@ -81,10 +83,53 @@ int main(void)
                 return EXIT_SUCCESS;
             }
             //            if(event.type == SDL_CONTROLLERBUTTONDOWN || event.type == SDL_CONTROLLERBUTTONUP)
-            if(event.type == SDL_CONTROLLERBUTTONDOWN)
+
+            if(event.type == SDL_CONTROLLERAXISMOTION)
+            {
+                // Adjust position based on axis movement with a threshold
+                if(event.caxis.value > MOVEMENT_THRESHOLD && event.caxis.axis == SDL_CONTROLLER_AXIS_LEFTX)
+                {
+                    temp_x = my_player.x - 1;
+                    if(temp_x <= min_x)
+                    {
+                        temp_x = my_player.x;
+                    }
+                }
+                else if(event.caxis.value < -MOVEMENT_THRESHOLD && event.caxis.axis == SDL_CONTROLLER_AXIS_LEFTX)
+                {
+                    temp_x = my_player.x + 1;
+                    if(temp_x >= max_x)
+                    {
+                        temp_x = my_player.x;
+                    }
+                }
+                if(event.caxis.value > MOVEMENT_THRESHOLD && event.caxis.axis == SDL_CONTROLLER_AXIS_LEFTY)
+                {
+                    temp_y = my_player.y - 1;
+                    if(temp_y <= min_y)
+                    {
+                        temp_y = my_player.y;
+                    }
+                }
+                else if(event.caxis.value < -MOVEMENT_THRESHOLD && event.caxis.axis == SDL_CONTROLLER_AXIS_LEFTY)
+                {
+                    temp_y = my_player.y + 1;
+                    if(temp_y >= max_y)
+                    {
+                        temp_y = my_player.y;
+                    }
+                }
+                mvprintw(my_player.y, my_player.x, " ");
+                my_player.x = temp_x;
+                my_player.y = temp_y;
+                mvprintw(my_player.y, my_player.x, "%s", my_player.player_char);
+            }
+
+            /*if(event.type == SDL_CONTROLLERBUTTONDOWN)
             {
                 //                printf("Button event: button %d %s\n", event.cbutton.button, event.type == SDL_CONTROLLERBUTTONDOWN ? "pressed" : "released");
                 //                mvprintw(1, 1, "Button event: button %d %s\n", event.cbutton.button, event.type == SDL_CONTROLLERBUTTONDOWN ? "pressed" : "released");
+
 
                 if(event.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_UP)
                 {
@@ -127,7 +172,7 @@ int main(void)
             if(event.type == SDL_CONTROLLERAXISMOTION)
             {
                 //                printf("Axis event: axis %d position %d\n", event.caxis.axis, event.caxis.value);
-            }
+            }*/
         }
     }
 }
