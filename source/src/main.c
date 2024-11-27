@@ -26,6 +26,7 @@ int main(void)
 
     initscr();
     refresh();
+    keypad(stdscr, TRUE);
 
     my_player.player_char = "8";
     my_player.x = PLAYER_START_POS my_player.y = PLAYER_START_POS
@@ -77,6 +78,7 @@ void draw(void)
     char roof;
 
     curs_set(0);
+
     wall = '|';
     roof = '-';
 

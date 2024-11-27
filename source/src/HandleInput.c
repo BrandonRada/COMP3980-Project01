@@ -65,38 +65,92 @@ void handle_input(SDL_GameController *controller, SDL_Event *event, struct playe
             //    printf("Button event: button %d %s\n", event.cbutton.button, event.type == SDL_CONTROLLERBUTTONDOWN ? "pressed" : "released");
             //    mvprintw(1, 1, "Button event: button %d %s\n", event.cbutton.button, event.type == SDL_CONTROLLERBUTTONDOWN ? "pressed" : "released");
 
-            if(event->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_UP)
+            switch(event->cbutton.button)
             {
-                temp_y = my_player->y - 1;
-                if(temp_y <= min_y)
-                {
-                    temp_y = my_player->y;
-                }
+                case SDL_CONTROLLER_BUTTON_DPAD_UP:
+                    temp_y = my_player->y - 1;
+                    if(temp_y <= min_y)
+                    {
+                        temp_y = my_player->y;
+                    }
+                    break;
+
+                case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+                    temp_y = my_player->y + 1;
+                    if(temp_y >= max_y)
+                    {
+                        temp_y = my_player->y;
+                    }
+                    break;
+
+                case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+                    temp_x = my_player->x + 1;
+                    if(temp_x >= max_x)
+                    {
+                        temp_x = my_player->x;
+                    }
+                    break;
+
+                case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+                    temp_x = my_player->x - 1;
+                    if(temp_x <= min_x)
+                    {
+                        temp_x = my_player->x;
+                    }
+                    break;
+
+                default:
+                    break;
             }
-            else if(event->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN)
+
+            mvprintw(my_player->y, my_player->x, " ");
+            my_player->x = temp_x;
+            my_player->y = temp_y;
+            mvprintw(my_player->y, my_player->x, "%s", my_player->player_char);
+        }
+
+        if(event->type == SDL_KEYDOWN)
+        {
+            printf("Key pressed: %d\n", event->key.keysym.sym);
+            switch(event->key.keysym.sym)
             {
-                temp_y = my_player->y + 1;
-                if(temp_y >= max_y)
-                {
-                    temp_y = my_player->y;
-                }
+                case SDLK_UP:
+                    temp_y = my_player->y - 1;
+                    if(temp_y <= min_y)
+                    {
+                        temp_y = my_player->y;
+                    }
+                    break;
+
+                case SDLK_a:
+                    temp_y = my_player->y + 1;
+                    if(temp_y >= max_y)
+                    {
+                        temp_y = my_player->y;
+                    }
+                    break;
+
+                case SDLK_RIGHT:
+                    temp_x = my_player->x + 1;
+                    if(temp_x >= max_x)
+                    {
+                        temp_x = my_player->x;
+                    }
+                    break;
+
+                case SDLK_LEFT:
+                    temp_x = my_player->x - 1;
+                    if(temp_x <= min_x)
+                    {
+                        temp_x = my_player->x;
+                    }
+                    break;
+
+                default:
+                    break;
             }
-            else if(event->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT)
-            {
-                temp_x = my_player->x + 1;
-                if(temp_x >= max_x)
-                {
-                    temp_x = my_player->x;
-                }
-            }
-            else if(event->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT)
-            {
-                temp_x = my_player->x - 1;
-                if(temp_x <= min_x)
-                {
-                    temp_x = my_player->x;
-                }
-            }
+
+            // Update player's position for keyboard input
             mvprintw(my_player->y, my_player->x, " ");
             my_player->x = temp_x;
             my_player->y = temp_y;
