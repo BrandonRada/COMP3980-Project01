@@ -1,1 +1,1 @@
-main src/main.c src/HandleInput.c src/Arena.c include/HandleInput.h include/Arena.h SDL2 curses m
+main src/main.c src/HandleInput.c include/HandleInput.h SDL2 curses m

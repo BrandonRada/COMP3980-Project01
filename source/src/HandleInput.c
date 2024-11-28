@@ -1,4 +1,5 @@
 #include "../include/HandleInput.h"
+#include "../include/Arena.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
