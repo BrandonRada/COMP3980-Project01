@@ -5,20 +5,26 @@
 #include <curses.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
 
-#define C 10000
+#define NANO 1000000000
+#define FIXED_UPDATE (NANO / 30)
 
 int main(void)
 {
     struct player       local_player;
     struct arena        local_arena;
+    struct timespec     ts;
     SDL_GameController *controller = NULL;
     SDL_Event           event;
-    int                 count = 0;
 
     initscr();
     refresh();
     keypad(stdscr, TRUE);
+
+    ts.tv_sec  = FIXED_UPDATE / NANO;
+    ts.tv_nsec = FIXED_UPDATE % NANO;
 
     getmaxyx(stdscr, local_arena.max_y, local_arena.max_x);
     local_player.player_char = "+";
@@ -59,13 +65,10 @@ int main(void)
 
         mvprintw(2, 1, "Joystick distance: %f\n", distance);
         mvprintw(3, 1, "Joystick angle: %d\n", angle);
-        if(count > C)
-        {
-            handle_input(&controller, &event, &local_player, &local_arena);
-            count = 0;
-        }
 
-        count++;
+        handle_input(&controller, &event, &local_player, &local_arena);
+
+        nanosleep(&ts, NULL);
     }
 }
 
