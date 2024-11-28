@@ -81,81 +81,44 @@ void handle_controller_input(SDL_GameController *controller, const SDL_Event *ev
     get_joystick_distance(controller, &distance);
     get_joystick_angle(controller, &angle, &distance);
 
-    if(distance > THRESH)
-    {
-        if(angle > TR && angle < TL)    // up
-        {
-            local_player->temp_y = local_player->y - 1;
-            if(local_player->temp_y <= local_arena->min_y)
-            {
-                local_player->temp_y = local_player->y;
-            }
-        }
-        else if(angle > BL && angle < BR)    // down
-        {
-            local_player->temp_y = local_player->y + 1;
-            if(local_player->temp_y >= local_arena->max_y)
-            {
-                local_player->temp_y = local_player->y;
-            }
-        }
+    mvprintw(2, 1, "Joystick distance: %f\n", distance);
+    mvprintw(3, 1, "Joystick angle: %d\n", angle);
 
-        if(angle > TL && angle < BL)    // left
+    if(angle > TR && angle < TL)    // up
+    {
+        local_player->temp_y = local_player->y - 1;
+        if(local_player->temp_y <= local_arena->min_y)
         {
-            local_player->temp_x = local_player->x - 1;
-            if(local_player->temp_x <= local_arena->min_x)
-            {
-                local_player->temp_x = local_player->x;
-            }
+            local_player->temp_y = local_player->y;
         }
-        else if(!(angle > TR && angle < BR))    // right
+    }
+    else if(angle > BL && angle < BR)    // down
+    {
+        local_player->temp_y = local_player->y + 1;
+        if(local_player->temp_y >= local_arena->max_y)
         {
-            local_player->temp_x = local_player->x + 1;
-            if(local_player->temp_x >= local_arena->max_x)
-            {
-                local_player->temp_x = local_player->x;
-            }
+            local_player->temp_y = local_player->y;
         }
     }
 
-    /*if(event->type == SDL_CONTROLLERAXISMOTION)
+    if(angle > TL && angle < BL)    // left
     {
-        // Adjust position based on axis movement with a threshold
-        if(event->caxis.value < -MOVEMENT_THRESHOLD && event->caxis.axis == SDL_CONTROLLER_AXIS_LEFTX)
+        local_player->temp_x = local_player->x - 1;
+        if(local_player->temp_x <= local_arena->min_x)
         {
-            local_player->temp_x = local_player->x - 1;
-            if(local_player->temp_x <= local_arena->min_x)
-            {
-                local_player->temp_x = local_player->x;
-            }
+            local_player->temp_x = local_player->x;
         }
-        else if(event->caxis.value > MOVEMENT_THRESHOLD && event->caxis.axis == SDL_CONTROLLER_AXIS_LEFTX)
+    }
+    else if(!(angle > TR && angle < BR) && angle != -1)    // right
+    {
+        local_player->temp_x = local_player->x + 1;
+        if(local_player->temp_x >= local_arena->max_x)
         {
-            local_player->temp_x = local_player->x + 1;
-            if(local_player->temp_x >= local_arena->max_x)
-            {
-                local_player->temp_x = local_player->x;
-            }
+            local_player->temp_x = local_player->x;
         }
+    }
 
-        if(event->caxis.value < -MOVEMENT_THRESHOLD && event->caxis.axis == SDL_CONTROLLER_AXIS_LEFTY)
-        {
-            local_player->temp_y = local_player->y - 1;
-            if(local_player->temp_y <= local_arena->min_y)
-            {
-                local_player->temp_y = local_player->y;
-            }
-        }
-        else if(event->caxis.value > MOVEMENT_THRESHOLD && event->caxis.axis == SDL_CONTROLLER_AXIS_LEFTY)
-        {
-            local_player->temp_y = local_player->y + 1;
-            if(local_player->temp_y >= local_arena->max_y)
-            {
-                local_player->temp_y = local_player->y;
-            }
-        }
-    }*/
-
+    // DPad movement, currently broken
     if(event->type == SDL_CONTROLLERBUTTONDOWN)
     {
         if(event->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_UP)
@@ -195,6 +158,7 @@ void handle_controller_input(SDL_GameController *controller, const SDL_Event *ev
 
 void handle_keyboard_input(const SDL_Event *event, struct player *local_player, const struct arena *local_arena)
 {
+    // Keyboard input is currently broken
     if(event->type == SDL_KEYDOWN)
     {
         if(event->key.keysym.sym == SDLK_w || event->key.keysym.sym == SDLK_UP)
@@ -232,7 +196,7 @@ void handle_keyboard_input(const SDL_Event *event, struct player *local_player, 
     }
 }
 
-// Function to get the dead zone distance
+// Gets the joysticks distance from idle
 void get_joystick_distance(SDL_GameController *controller, double *distance)
 {
     int x = abs(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX));
@@ -241,17 +205,11 @@ void get_joystick_distance(SDL_GameController *controller, double *distance)
     double norm_x = ((double)x / (double)SDL_CONTROLLER_AXIS_MAX);
     double norm_y = ((double)y / (double)SDL_CONTROLLER_AXIS_MAX);
 
-    if(norm_x > norm_y)
-    {
-        *distance = norm_x;
-    }
-    else
-    {
-        *distance = norm_y;
-    }
+    *distance = (norm_x > norm_y) ? norm_x : norm_y;
+
 }
 
-// Function to get the degree and direction
+// Gets the joystick angle
 void get_joystick_angle(SDL_GameController *controller, int *angle, const double *distance)
 {
     int x = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX);
@@ -260,17 +218,15 @@ void get_joystick_angle(SDL_GameController *controller, int *angle, const double
     double norm_x = ((double)x / (double)SDL_CONTROLLER_AXIS_MAX);
     double norm_y = -((double)y / (double)SDL_CONTROLLER_AXIS_MAX);
 
-    // Calculate the angle in radians
     double radians = atan2(norm_y, norm_x);
-
-    // Convert the angle to degrees
     *angle = (int)(radians * (D_HALF / M_PI));
+
     if(*distance < THRESH)
     {
         *angle = -1;
     }
     else if(*angle < 0)
     {
-        *angle += D_MAX;    // Convert to a range of 0 to 360 degrees
+        *angle += D_MAX;
     }
 }

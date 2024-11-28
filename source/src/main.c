@@ -55,16 +55,7 @@ int main(void)
     mvprintw(local_player.y, local_player.x, "%s", local_player.player_char);
     while(1)
     {
-        double distance = 0;
-        int    angle    = 0;
-
         draw(&local_arena);
-
-        get_joystick_distance(controller, &distance);
-        get_joystick_angle(controller, &angle, &distance);
-
-        mvprintw(2, 1, "Joystick distance: %f\n", distance);
-        mvprintw(3, 1, "Joystick angle: %d\n", angle);
 
         handle_input(&controller, &event, &local_player, &local_arena);
 
