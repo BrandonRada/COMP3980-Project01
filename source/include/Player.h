@@ -6,6 +6,8 @@ struct player
     const char *player_char;
     int         x;
     int         y;
+    int         temp_x;
+    int         temp_y;
 };
 
-#endif    // MAIN_PLAYER_H
+#endif    // PLAYER_H
