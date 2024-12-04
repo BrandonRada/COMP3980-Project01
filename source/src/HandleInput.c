@@ -15,6 +15,8 @@
 
 void handle_input(SDL_GameController **controller, SDL_Event *event, struct player *local_player, const struct arena *local_arena)
 {
+    int ch;
+    ch                   = getch();
     local_player->temp_x = local_player->x;
     local_player->temp_y = local_player->y;
 
@@ -49,9 +51,10 @@ void handle_input(SDL_GameController **controller, SDL_Event *event, struct play
     {
         mvprintw(1, 1, "Controller disconnected.\n");
     }
-    if(event->type == SDL_KEYDOWN)
+    if(ch == KEY_UP || ch == KEY_DOWN || ch == KEY_LEFT || ch == KEY_RIGHT)
     {
-        handle_keyboard_input(event, local_player, local_arena);
+        // handle_keyboard_input(event, local_player, local_arena);
+        handle_keyboard_input(local_player, local_arena);
     }
     // Update player's position
     mvprintw(local_player->y, local_player->x, " ");
@@ -144,10 +147,17 @@ void handle_controller_input(SDL_GameController *controller, const SDL_Event *ev
     }
 }
 
-void handle_keyboard_input(const SDL_Event *event, struct player *local_player, const struct arena *local_arena)
+// void handle_keyboard_input(const SDL_Event *event, struct player *local_player, const struct arena *local_arena)
+void handle_keyboard_input(struct player *local_player, const struct arena *local_arena)
+
 {
-    // Keyboard input is currently broken
-    if(event->key.keysym.sym == SDLK_w || event->key.keysym.sym == SDLK_UP)
+    int ch;
+    ch = getch();
+    // if()
+    // {
+
+    // }
+    if(ch == KEY_UP)
     {
         local_player->temp_y = local_player->y - 1;
         if(local_player->temp_y < local_arena->min_y)
@@ -155,7 +165,7 @@ void handle_keyboard_input(const SDL_Event *event, struct player *local_player, 
             local_player->temp_y = local_arena->min_y;
         }
     }
-    else if(event->key.keysym.sym == SDLK_s || event->key.keysym.sym == SDLK_DOWN)
+    else if(ch == KEY_DOWN)
     {
         local_player->temp_y = local_player->y + 1;
         if(local_player->temp_y > local_arena->max_y)
@@ -163,7 +173,7 @@ void handle_keyboard_input(const SDL_Event *event, struct player *local_player, 
             local_player->temp_y = local_arena->max_y;
         }
     }
-    if(event->key.keysym.sym == SDLK_a || event->key.keysym.sym == SDLK_LEFT)
+    else if(ch == KEY_LEFT)
     {
         local_player->temp_x = local_player->x - 1;
         if(local_player->temp_x < local_arena->min_x)
@@ -171,7 +181,7 @@ void handle_keyboard_input(const SDL_Event *event, struct player *local_player, 
             local_player->temp_x = local_arena->min_x;
         }
     }
-    else if(event->key.keysym.sym == SDLK_d || event->key.keysym.sym == SDLK_RIGHT)
+    else if(ch == KEY_RIGHT)
     {
         local_player->temp_x = local_player->x + 1;
         if(local_player->temp_x > local_arena->max_x)
@@ -179,6 +189,39 @@ void handle_keyboard_input(const SDL_Event *event, struct player *local_player, 
             local_player->temp_x = local_arena->max_x;
         }
     }
+    // // Keyboard input is currently broken
+    // if(event->key.keysym.sym == SDLK_w || event->key.keysym.sym == SDLK_UP)
+    // {
+    //     local_player->temp_y = local_player->y - 1;
+    //     if(local_player->temp_y < local_arena->min_y)
+    //     {
+    //         local_player->temp_y = local_arena->min_y;
+    //     }
+    // }
+    // else if(event->key.keysym.sym == SDLK_s || event->key.keysym.sym == SDLK_DOWN)
+    // {
+    //     local_player->temp_y = local_player->y + 1;
+    //     if(local_player->temp_y > local_arena->max_y)
+    //     {
+    //         local_player->temp_y = local_arena->max_y;
+    //     }
+    // }
+    // if(event->key.keysym.sym == SDLK_a || event->key.keysym.sym == SDLK_LEFT)
+    // {
+    //     local_player->temp_x = local_player->x - 1;
+    //     if(local_player->temp_x < local_arena->min_x)
+    //     {
+    //         local_player->temp_x = local_arena->min_x;
+    //     }
+    // }
+    // else if(event->key.keysym.sym == SDLK_d || event->key.keysym.sym == SDLK_RIGHT)
+    // {
+    //     local_player->temp_x = local_player->x + 1;
+    //     if(local_player->temp_x > local_arena->max_x)
+    //     {
+    //         local_player->temp_x = local_arena->max_x;
+    //     }
+    // }
 }
 
 // Gets the joysticks distance from idle
