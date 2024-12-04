@@ -43,7 +43,6 @@ void handle_input(SDL_GameController **controller, SDL_Event *event, struct play
     }
     if(*controller)
     {
-        mvprintw(1, 1, "Controller connected.\n");
         handle_controller_input(*controller, event, local_player, local_arena);
     }
     else
@@ -69,6 +68,7 @@ void handle_controller_input(SDL_GameController *controller, const SDL_Event *ev
     get_joystick_distance(controller, &distance);
     get_joystick_angle(controller, &angle, &distance);
 
+    mvprintw(1, 1, "Controller connected.\n");
     mvprintw(2, 1, "Joystick distance: %f\n", distance);
     mvprintw(3, 1, "Joystick angle: %d\n", angle);
 
