@@ -100,7 +100,7 @@ void draw(struct arena *local_arena)
     refresh();
     if(local_arena->window_changed == true)
     {
-        local_arena->window_changed = false;
-        clear();
+        // local_arena->window_changed = false;
+        // clear();
     }
 }

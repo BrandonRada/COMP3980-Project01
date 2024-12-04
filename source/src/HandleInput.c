@@ -31,32 +31,26 @@ void handle_input(SDL_GameController **controller, SDL_Event *event, struct play
             exit(EXIT_SUCCESS);
         }
 
-        if(event->type == SDL_CONTROLLERDEVICEADDED)
+        if(event->type == SDL_CONTROLLERDEVICEADDED && !*controller)
         {
-            if(!*controller)
-            {
-                *controller = SDL_GameControllerOpen(event->cdevice.which);
-                if(*controller)
-                {
-                    mvprintw(1, 1, "Controller connected.\n");
-                }
-            }
+            *controller = SDL_GameControllerOpen(event->cdevice.which);
         }
-        else if(event->type == SDL_CONTROLLERDEVICEREMOVED)
+        else if(event->type == SDL_CONTROLLERDEVICEREMOVED && *controller)
         {
-            if(*controller)
-            {
-                SDL_GameControllerClose(*controller);
-                *controller = NULL;
-                mvprintw(1, 1, "Controller disconnected.\n");
-            }
+            SDL_GameControllerClose(*controller);
+            *controller = NULL;
         }
     }
     if(*controller)
     {
+        mvprintw(1, 1, "Controller connected.\n");
         handle_controller_input(*controller, event, local_player, local_arena);
     }
     else
+    {
+        mvprintw(1, 1, "Controller disconnected.\n");
+    }
+    if(event->type == SDL_KEYDOWN)
     {
         handle_keyboard_input(event, local_player, local_arena);
     }
@@ -71,12 +65,6 @@ void handle_controller_input(SDL_GameController *controller, const SDL_Event *ev
 {
     double distance = 0;
     int    angle    = 0;
-    if(event->type == SDL_QUIT)
-    {
-        SDL_GameControllerClose(controller);
-        SDL_Quit();
-        exit(EXIT_SUCCESS);
-    }
 
     get_joystick_distance(controller, &distance);
     get_joystick_angle(controller, &angle, &distance);
@@ -159,39 +147,36 @@ void handle_controller_input(SDL_GameController *controller, const SDL_Event *ev
 void handle_keyboard_input(const SDL_Event *event, struct player *local_player, const struct arena *local_arena)
 {
     // Keyboard input is currently broken
-    if(event->type == SDL_KEYDOWN)
+    if(event->key.keysym.sym == SDLK_w || event->key.keysym.sym == SDLK_UP)
     {
-        if(event->key.keysym.sym == SDLK_w || event->key.keysym.sym == SDLK_UP)
+        local_player->temp_y = local_player->y - 1;
+        if(local_player->temp_y < local_arena->min_y)
         {
-            local_player->temp_y = local_player->y - 1;
-            if(local_player->temp_y < local_arena->min_y)
-            {
-                local_player->temp_y = local_arena->min_y;
-            }
+            local_player->temp_y = local_arena->min_y;
         }
-        else if(event->key.keysym.sym == SDLK_s || event->key.keysym.sym == SDLK_DOWN)
+    }
+    else if(event->key.keysym.sym == SDLK_s || event->key.keysym.sym == SDLK_DOWN)
+    {
+        local_player->temp_y = local_player->y + 1;
+        if(local_player->temp_y > local_arena->max_y)
         {
-            local_player->temp_y = local_player->y + 1;
-            if(local_player->temp_y > local_arena->max_y)
-            {
-                local_player->temp_y = local_arena->max_y;
-            }
+            local_player->temp_y = local_arena->max_y;
         }
-        if(event->key.keysym.sym == SDLK_a || event->key.keysym.sym == SDLK_LEFT)
+    }
+    if(event->key.keysym.sym == SDLK_a || event->key.keysym.sym == SDLK_LEFT)
+    {
+        local_player->temp_x = local_player->x - 1;
+        if(local_player->temp_x < local_arena->min_x)
         {
-            local_player->temp_x = local_player->x - 1;
-            if(local_player->temp_x < local_arena->min_x)
-            {
-                local_player->temp_x = local_arena->min_x;
-            }
+            local_player->temp_x = local_arena->min_x;
         }
-        else if(event->key.keysym.sym == SDLK_d || event->key.keysym.sym == SDLK_RIGHT)
+    }
+    else if(event->key.keysym.sym == SDLK_d || event->key.keysym.sym == SDLK_RIGHT)
+    {
+        local_player->temp_x = local_player->x + 1;
+        if(local_player->temp_x > local_arena->max_x)
         {
-            local_player->temp_x = local_player->x + 1;
-            if(local_player->temp_x > local_arena->max_x)
-            {
-                local_player->temp_x = local_arena->max_x;
-            }
+            local_player->temp_x = local_arena->max_x;
         }
     }
 }
