@@ -206,7 +206,6 @@ void get_joystick_distance(SDL_GameController *controller, double *distance)
     double norm_y = ((double)y / (double)SDL_CONTROLLER_AXIS_MAX);
 
     *distance = (norm_x > norm_y) ? norm_x : norm_y;
-
 }
 
 // Gets the joystick angle
@@ -219,7 +218,7 @@ void get_joystick_angle(SDL_GameController *controller, int *angle, const double
     double norm_y = -((double)y / (double)SDL_CONTROLLER_AXIS_MAX);
 
     double radians = atan2(norm_y, norm_x);
-    *angle = (int)(radians * (D_HALF / M_PI));
+    *angle         = (int)(radians * (D_HALF / M_PI));
 
     if(*distance < THRESH)
     {

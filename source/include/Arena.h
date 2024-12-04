@@ -13,6 +13,11 @@ struct arena
     /*__attribute__((unused)) */ int max_y;
     /*__attribute__((unused)) */ int min_x;
     /*__attribute__((unused)) */ int min_y;
+    int window_old_x;
+    int window_old_y;
+    int window_new_x;
+    int window_new_y;
+    bool window_changed;
 };
 
 void draw(struct arena *local_arena);

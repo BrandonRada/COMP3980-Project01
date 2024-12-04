@@ -19,9 +19,18 @@ int main(void)
     SDL_GameController *controller = NULL;
     SDL_Event           event;
 
+    // int  old_x;
+    // int  old_y;
+    // int  new_x;
+    // int  new_y;
+    // bool window_changed;
+
     initscr();
     refresh();
     keypad(stdscr, TRUE);
+
+    local_arena.window_changed = false;
+    // window_changed             = false;
 
     ts.tv_sec  = FIXED_UPDATE / NANO;
     ts.tv_nsec = FIXED_UPDATE % NANO;
@@ -53,9 +62,25 @@ int main(void)
     }
 
     mvprintw(local_player.y, local_player.x, "%s", local_player.player_char);
+    getmaxyx(stdscr, local_arena.window_old_y, local_arena.window_old_x);
+    // getmaxyx(stdscr, old_x, old_y);
     while(1)
     {
+        // getmaxyx(stdscr, new_x, new_y);
+        // if(new_x != old_x || new_y != old_y)
+        // {
+        //     window_changed = true;
+        // }
+        // getmaxyx(stdscr, old_x, old_y);
+        // draw(&local_arena, &window_changed);
+
         draw(&local_arena);
+        getmaxyx(stdscr, local_arena.window_new_y, local_arena.window_new_x);
+        if(local_arena.window_new_x != local_arena.window_old_x || local_arena.window_new_y != local_arena.window_old_y)
+        {
+            local_arena.window_changed = true;
+        }
+        getmaxyx(stdscr, local_arena.window_old_x, local_arena.window_old_y);
 
         handle_input(&controller, &event, &local_player, &local_arena);
 
@@ -73,4 +98,9 @@ void draw(struct arena *local_arena)
     curs_set(0);
     box(stdscr, 0, 0);
     refresh();
+    if(local_arena->window_changed == true)
+    {
+        local_arena->window_changed = false;
+        clear();
+    }
 }
