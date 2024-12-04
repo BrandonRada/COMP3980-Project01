@@ -15,8 +15,9 @@
 
 void handle_input(SDL_GameController **controller, SDL_Event *event, struct player *local_player, const struct arena *local_arena)
 {
-    int ch;
-    ch                   = getch();
+    // int ch;
+    nodelay(stdscr, TRUE);
+    // ch                   = getch();
     local_player->temp_x = local_player->x;
     local_player->temp_y = local_player->y;
 
@@ -43,19 +44,65 @@ void handle_input(SDL_GameController **controller, SDL_Event *event, struct play
             *controller = NULL;
         }
     }
+
+    // TESTING
+    // if(*controller)
+    // {
+    //     double joystick_distance = 0;
+    //     nodelay(stdscr, TRUE);
+    //     get_joystick_distance(*controller, &joystick_distance);
+    //
+    //     if(joystick_distance >= THRESH)
+    //     {
+    //         nodelay(stdscr, FALSE);
+    //         handle_controller_input(*controller, event, local_player, local_arena);
+    //     }
+    //     else
+    //     {
+    //         nodelay(stdscr, TRUE);
+    //         mvprintw(1, 1, "Controller connected, but no joystick input detected.\n");
+    //         // Check for keyboard input fallback
+    //         if(ch == KEY_UP || ch == KEY_DOWN || ch == KEY_LEFT || ch == KEY_RIGHT)
+    //         {
+    //             handle_keyboard_input(local_player, local_arena);
+    //         }
+    //     }
+    // }
+    // else
+    // {
+    //     nodelay(stdscr, TRUE);
+    //     mvprintw(1, 1, "Controller disconnected.\n");
+    //     // Handle keyboard input if no controller is connected
+    //     if(ch == KEY_UP || ch == KEY_DOWN || ch == KEY_LEFT || ch == KEY_RIGHT)
+    //     {
+    //         handle_keyboard_input(local_player, local_arena);
+    //     }
+    // }
+
+    ///
     if(*controller)
     {
         handle_controller_input(*controller, event, local_player, local_arena);
+        handle_keyboard_input(local_player, local_arena);
     }
     else
     {
-        mvprintw(1, 1, "Controller disconnected.\n");
-    }
-    if(ch == KEY_UP || ch == KEY_DOWN || ch == KEY_LEFT || ch == KEY_RIGHT)
-    {
-        // handle_keyboard_input(event, local_player, local_arena);
         handle_keyboard_input(local_player, local_arena);
     }
+
+    // if(*controller)
+    // {
+    //     handle_controller_input(*controller, event, local_player, local_arena);
+    // }
+    // else
+    // {
+    //     mvprintw(1, 1, "Controller disconnected.\n");
+    // }
+    // if(ch == KEY_UP || ch == KEY_DOWN || ch == KEY_LEFT || ch == KEY_RIGHT)
+    // {
+    //     // handle_keyboard_input(event, local_player, local_arena);
+    //     handle_keyboard_input(local_player, local_arena);
+    // }
     // Update player's position
     mvprintw(local_player->y, local_player->x, " ");
     local_player->x = local_player->temp_x;
