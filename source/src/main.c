@@ -16,7 +16,6 @@
 #define FIXED_UPDATE (NANO / FPS)
 #define BUFSIZE 1024
 #define TEN 10
-#define RECONNECT_INTERVAL (FPS * 2)
 
 int main(void)
 {
@@ -91,7 +90,7 @@ int main(void)
         mvprintw(local_arena.max_y - 1, 2, "Timer: %ld", timer / FPS);
         handle_input(&controller, &event, &local_player, &local_arena);
 
-        if(valid_msg == 0 || timer % RECONNECT_INTERVAL == 0)
+        if(valid_msg == 0 || timer % FPS == 0)
         {
             snprintf(buffer, sizeof(buffer), "%d:%d", (int)local_player.x, (int)local_player.y);
             send_message(sock, buffer, &peer_addr);
@@ -113,14 +112,17 @@ int main(void)
             }
             reconnect_attempts = 0;    // Reset reconnect attempts on successful communication
         }
-        else if(timer % RECONNECT_INTERVAL == 0)
+        else if(timer % FPS == 0)
         {
             reconnect_attempts++;
             mvprintw(local_arena.max_y - 2, 2, "Reconnect attempt: %d", reconnect_attempts);
-            close(sock);
-            sock = create_socket();
-            bind_socket(sock, &my_addr);
-            configure_peer_addr(&peer_addr);
+            if (reconnect_attempts == 2)
+            {
+                close(sock);
+                sock = create_socket();
+                bind_socket(sock, &my_addr);
+                configure_peer_addr(&peer_addr);
+            }
         }
 
         mvprintw((int)remote_player.y, (int)remote_player.x, "%s", remote_player.player_char);
