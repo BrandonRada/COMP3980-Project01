@@ -31,7 +31,7 @@ int main(void)
     struct sockaddr_in my_addr;
     char               buffer[BUFSIZE];
     long               timer;
-
+    int                valid_msg;
     initscr();
     refresh();
     keypad(stdscr, TRUE);
@@ -49,7 +49,7 @@ int main(void)
     remote_player.x           = -1;
     remote_player.y           = -1;
     timer                     = 0;
-
+    valid_msg                 = 0;
     if(SDL_Init(SDL_INIT_GAMECONTROLLER) != 0)
     {
         mvprintw(1, 1, "SDL_Init Error: %s\n", SDL_GetError());
@@ -83,14 +83,18 @@ int main(void)
         const char *token_x = NULL;
         const char *token_y = NULL;
         char       *saveptr = NULL;
-        int                valid_msg;
 
         draw(&local_arena);
         timer++;
         mvprintw(local_arena.max_y - 1, 2, "Timer: %ld", timer / FPS);
         handle_input(&controller, &event, &local_player, &local_arena);
 
-        if (timer % TEN == 0)
+        snprintf(buffer, sizeof(buffer), "%d:%d", (int)local_player.x, (int)local_player.y);
+        if(valid_msg == 0)
+        {
+            send_message(sock, buffer, &peer_addr);
+        }
+        else if(timer % FPS == 0)
         {
             snprintf(buffer, sizeof(buffer), "%d:%d", (int)local_player.x, (int)local_player.y);
             send_message(sock, buffer, &peer_addr);
