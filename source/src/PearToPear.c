@@ -107,6 +107,6 @@ void send_message(int sock, const char *message, const struct sockaddr_in *peer_
     sent_bytes = sendto(sock, message, strlen(message), 0, (const struct sockaddr *)peer_addr, sizeof(struct sockaddr_in));
     if(sent_bytes < 0)
     {
-        mvprintw(ATE, 1, "Message sending failed");
+        mvprintw(ATE + 1, 1, "Message sending failed");
     }
 }
