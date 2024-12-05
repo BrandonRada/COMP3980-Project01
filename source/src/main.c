@@ -14,11 +14,12 @@
 #define NANO 1000000000
 #define FIXED_UPDATE (NANO / 30)
 #define BUFSIZE 1024
+#define TEN 10
 
 int main(void)
 {
-    struct player local_player;
-    // struct player       remote_player;
+    struct player       local_player;
+    struct player       remote_player;
     struct arena        local_arena;
     struct timespec     ts;
     SDL_GameController *controller = NULL;
@@ -39,12 +40,12 @@ int main(void)
     ts.tv_nsec = FIXED_UPDATE % NANO;
 
     getmaxyx(stdscr, local_arena.max_y, local_arena.max_x);
-    local_player.player_char = "+";
-    local_player.x           = local_arena.max_x / 2;
-    local_player.y           = local_arena.max_y / 2;
-    // remote_player.player_char = "O";
-    // remote_player.x           = local_arena.max_x / 4;
-    // remote_player.y           = local_arena.max_y / 4;
+    local_player.player_char  = "+";
+    local_player.x            = local_arena.max_x / 2;
+    local_player.y            = local_arena.max_y / 2;
+    remote_player.player_char = "O";
+    remote_player.x           = -1;
+    remote_player.y           = -1;
 
     if(SDL_Init(SDL_INIT_GAMECONTROLLER) != 0)
     {
@@ -77,6 +78,10 @@ int main(void)
 
     while(1)
     {
+        const char *token_x = NULL;
+        const char *token_y = NULL;
+        char       *saveptr = NULL;
+
         getmaxyx(stdscr, local_arena.window_new_y, local_arena.window_new_x);
         if(local_arena.window_new_x != local_arena.window_old_x || local_arena.window_new_y != local_arena.window_old_y)
         {
@@ -90,11 +95,21 @@ int main(void)
         snprintf(buffer, sizeof(buffer), "%d:%d", local_player.x, local_player.y);
         send_message(sock, buffer, &peer_addr);
 
+        // Receive the remote player's position
         receive_message(sock, buffer, &peer_addr);
-        snprintf(buffer, sizeof(buffer), "%d:%d", local_player.x, local_player.y);
 
+        // Extract x and y values from the buffer using strtok_r
+        token_x = strtok_r(buffer, ":", &saveptr);
+        token_y = strtok_r(NULL, ":", &saveptr);
+
+        if(token_x != NULL && token_y != NULL)
+        {
+            remote_player.x = (int)strtol(token_x, NULL, TEN);
+            remote_player.y = (int)strtol(token_y, NULL, TEN);
+        }
+
+        mvprintw(remote_player.y, remote_player.x, "%s", remote_player.player_char);
         draw(&local_arena);
-        // mvprintw(remote_player.y, remote_player.x, "%s", remote_player.player_char);
 
         nanosleep(&ts, NULL);
     }
