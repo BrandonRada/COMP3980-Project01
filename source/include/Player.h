@@ -4,10 +4,10 @@
 struct player
 {
     const char *player_char;
-    int         x;
-    int         y;
-    int         temp_x;
-    int         temp_y;
+    double         x;
+    double         y;
+    double         temp_x;
+    double         temp_y;
 };
 
 #endif    // PLAYER_H

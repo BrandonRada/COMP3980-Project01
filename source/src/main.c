@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 #define NANO 1000000000
-#define FPS 15
+#define FPS 60
 #define FIXED_UPDATE (NANO / FPS)
 #define BUFSIZE 1024
 #define TEN 10
@@ -43,8 +43,8 @@ int main(void)
 
     getmaxyx(stdscr, local_arena.max_y, local_arena.max_x);
     local_player.player_char  = "+";
-    local_player.x            = local_arena.max_x / 2;
-    local_player.y            = local_arena.max_y / 2;
+    local_player.x            = (double)local_arena.max_x / 2;
+    local_player.y            = (double)local_arena.max_y / 2;
     remote_player.player_char = "O";
     remote_player.x           = -1;
     remote_player.y           = -1;
@@ -74,7 +74,7 @@ int main(void)
     bind_socket(sock, &my_addr);
     configure_peer_addr(&peer_addr);
 
-    mvprintw(local_player.y, local_player.x, "%s", local_player.player_char);
+    mvprintw((int)local_player.y, (int)local_player.x, "%s", local_player.player_char);
     getmaxyx(stdscr, local_arena.window_old_y, local_arena.window_old_x);
 
     while(1)
@@ -89,7 +89,7 @@ int main(void)
         mvprintw(local_arena.max_y - 1, 2, "Timer: %ld", timer / FPS);
         handle_input(&controller, &event, &local_player, &local_arena);
 
-        snprintf(buffer, sizeof(buffer), "%d:%d", local_player.x, local_player.y);
+        snprintf(buffer, sizeof(buffer), "%d:%d", (int)local_player.x, (int)local_player.y);
         send_message(sock, buffer, &peer_addr);
 
         // Receive the remote player's position
@@ -108,7 +108,7 @@ int main(void)
             }
         }
 
-        mvprintw(remote_player.y, remote_player.x, "%s", remote_player.player_char);
+        mvprintw((int)remote_player.y, (int)remote_player.x, "%s", remote_player.player_char);
         draw(&local_arena);
 
         nanosleep(&ts, NULL);

@@ -9,6 +9,7 @@
 #define TL 135
 #define BR 315
 #define BL 225
+#define SPEED_FACTOR 0.5
 
 void handle_input(SDL_GameController **controller, SDL_Event *event, struct player *local_player, const struct arena *local_arena)
 {
@@ -51,10 +52,10 @@ void handle_input(SDL_GameController **controller, SDL_Event *event, struct play
     }
 
     // Update player's position
-    mvprintw(local_player->y, local_player->x, " ");
+    mvprintw((int)local_player->y, (int)local_player->x, " ");
     local_player->x = local_player->temp_x;
     local_player->y = local_player->temp_y;
-    mvprintw(local_player->y, local_player->x, "%s", local_player->player_char);
+    mvprintw((int)local_player->y, (int)local_player->x, "%s", local_player->player_char);
 }
 
 void handle_controller_input(SDL_GameController *controller, struct player *local_player, const struct arena *local_arena)
@@ -71,7 +72,7 @@ void handle_controller_input(SDL_GameController *controller, struct player *loca
 
     if(angle > TR && angle < TL)    // up
     {
-        local_player->temp_y = local_player->y - 1;
+        local_player->temp_y = local_player->y - SPEED_FACTOR;
         if(local_player->temp_y <= local_arena->min_y)
         {
             local_player->temp_y = local_player->y;
@@ -79,7 +80,7 @@ void handle_controller_input(SDL_GameController *controller, struct player *loca
     }
     else if(angle > BL && angle < BR)    // down
     {
-        local_player->temp_y = local_player->y + 1;
+        local_player->temp_y = local_player->y + SPEED_FACTOR;
         if(local_player->temp_y >= local_arena->max_y)
         {
             local_player->temp_y = local_player->y;
@@ -88,7 +89,7 @@ void handle_controller_input(SDL_GameController *controller, struct player *loca
 
     if(angle > TL && angle < BL)    // left
     {
-        local_player->temp_x = local_player->x - 1;
+        local_player->temp_x = local_player->x - SPEED_FACTOR;
         if(local_player->temp_x <= local_arena->min_x)
         {
             local_player->temp_x = local_player->x;
@@ -96,7 +97,7 @@ void handle_controller_input(SDL_GameController *controller, struct player *loca
     }
     else if(!(angle > TR && angle < BR) && angle != -1)    // right
     {
-        local_player->temp_x = local_player->x + 1;
+        local_player->temp_x = local_player->x + SPEED_FACTOR;
         if(local_player->temp_x >= local_arena->max_x)
         {
             local_player->temp_x = local_player->x;
