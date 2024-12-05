@@ -154,8 +154,10 @@ int main(int argc, char *argv[])
                 }
 
                 // move remote player randomly
-                remote_player.x = (int)(remote_player.x + (rand() % 3 - 1)) % local_arena.max_x;
-                remote_player.y = (int)(remote_player.y + (rand() % 3 - 1)) % local_arena.max_y;
+                // remote_player.x = (int)(remote_player.x + (rand() % 3 - 1)) % local_arena.max_x;
+                // remote_player.y = (int)(remote_player.y + (rand() % 3 - 1)) % local_arena.max_y;
+                remote_player.x = (int)(remote_player.x + (arc4random() % 3 - 1)) % local_arena.max_x;
+                remote_player.y = (int)(remote_player.y + (arc4random() % 3 - 1)) % local_arena.max_y;
                 if(remote_player.x < local_arena.min_x)
                 {
                     remote_player.x = local_arena.min_x;
