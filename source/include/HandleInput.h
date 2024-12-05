@@ -4,6 +4,9 @@
 #include "./Arena.h"
 #include "./Player.h"
 #include <SDL2/SDL.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #define MOVEMENT_THRESHOLD 0.25
 
 void handle_input(SDL_GameController **controller, SDL_Event *event, struct player *local_player, const struct arena *local_arena);

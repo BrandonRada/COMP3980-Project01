@@ -1,8 +1,6 @@
 #include "../include/HandleInput.h"
 #include "../include/Arena.h"
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+
 
 #define SDL_CONTROLLER_AXIS_MAX 32767
 #define D_MAX 360
@@ -108,7 +106,6 @@ void handle_controller_input(SDL_GameController *controller, struct player *loca
 }
 
 void handle_keyboard_input(struct player *local_player, const struct arena *local_arena)
-
 {
     int ch;
     ch = getch();
