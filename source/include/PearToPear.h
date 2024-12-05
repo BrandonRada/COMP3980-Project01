@@ -5,7 +5,7 @@
 #ifndef MAIN_PEARTOPEAR_H
 #define MAIN_PEARTOPEAR_H
 
-/*#pragma GCC diagnostic push
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-default"
 #ifdef __clang__
     #pragma clang diagnostic push
@@ -17,7 +17,7 @@
 #pragma GCC diagnostic pop
 #ifdef __clang__
     #pragma clang diagnostic pop
-#endif*/
+#endif
 #include <arpa/inet.h>
 #include <curses.h>
 #include <fcntl.h>

@@ -3,7 +3,6 @@
 //
 
 #include "../include/PearToPear.h"
-#include <errno.h>
 
 #define PORT 8080
 #define BUFSIZE 1024
