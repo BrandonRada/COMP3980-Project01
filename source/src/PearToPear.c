@@ -17,7 +17,7 @@ int create_socket(void)
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if(sock < 0)
     {
-        perror("Socket creation failed");
+        mvprintw(4, 1, "Socket creation failed");
         exit(EXIT_FAILURE);
     }
 
@@ -39,7 +39,7 @@ void bind_socket(int sock, struct sockaddr_in *my_addr)
 
     if(bind(sock, (const struct sockaddr *)my_addr, sizeof(*my_addr)) < 0)
     {
-        perror("Bind failed");
+        mvprintw(FIVE, 1, "Bind failed");
         exit(EXIT_FAILURE);
     }
 
@@ -47,7 +47,7 @@ void bind_socket(int sock, struct sockaddr_in *my_addr)
     addr_len = sizeof(*my_addr);
     if(getsockname(sock, (struct sockaddr *)my_addr, &addr_len) == -1)
     {
-        perror("getsockname failed");
+        mvprintw(FIVE, 1, "getsockname failed");
         exit(EXIT_FAILURE);
     }
 
@@ -61,7 +61,7 @@ void configure_peer_addr(struct sockaddr_in *peer_addr)
     peer_addr->sin_port   = htons(PORT);
     if(inet_pton(AF_INET, PEER_ADDR, &peer_addr->sin_addr) <= 0)
     {
-        perror("Invalid address / Address not supported");
+        mvprintw(SIX, 1, "Invalid address / Address not supported");
         exit(EXIT_FAILURE);
     }
     mvprintw(SIX, 1, "Peer address configured to: %s, port: %u", PEER_ADDR, ntohs(peer_addr->sin_port));
@@ -69,14 +69,13 @@ void configure_peer_addr(struct sockaddr_in *peer_addr)
 
 void receive_message(int sock, char *buffer, struct sockaddr_in *src_addr)
 {
-    socklen_t src_addr_len = sizeof(*src_addr);
+    socklen_t       src_addr_len = sizeof(*src_addr);
+    struct timespec req          = {0, FIVETY};    // 50ms delay
 
-    struct timespec req = {0, FIVETY};    // 50ms delay
-
-    // Initialize src_addr to zero
     memset(src_addr, 0, sizeof(*src_addr));
 
     mvprintw(SEVEN, 1, "Waiting to receive message...");
+    refresh();
 
     while(1)
     {
@@ -86,10 +85,11 @@ void receive_message(int sock, char *buffer, struct sockaddr_in *src_addr)
         {
             buffer[bytes_read] = '\0';
             mvprintw(EIGHT, 1, "Message received from %s:%u: %s", inet_ntoa(src_addr->sin_addr), ntohs(src_addr->sin_port), buffer);
-            break;    // Exit loop when a message is received
+            refresh();
+            break;
         }
-        // Sleep for 50ms before trying again
-        nanosleep(&req, NULL);
+        mvprintw(EIGHT, 1, "Waiting for msg");
+        nanosleep(&req, NULL);    // Sleep for 50ms before retrying
     }
 }
 
@@ -100,6 +100,11 @@ void send_message(int sock, const char *message, const struct sockaddr_in *peer_
     sent_bytes = sendto(sock, message, strlen(message), 0, (const struct sockaddr *)peer_addr, sizeof(struct sockaddr_in));
     if(sent_bytes < 0)
     {
-        perror("Message sending failed");
+        mvprintw(NINE + 1, 1, "Message sending failed");
+    }
+    else
+    {
+        mvprintw(NINE + 1, 1, "Message sent successfully");
+        refresh();
     }
 }

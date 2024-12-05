@@ -33,6 +33,10 @@ static void *networking_thread(void *arg)
     char                 buffer[BUFSIZE];
     struct timespec      req = {0, FIVETY};
 
+    // Send an initial message
+    snprintf(buffer, sizeof(buffer), "Hello from %d:%d", net_data->my_addr.sin_port, net_data->my_addr.sin_addr.s_addr);
+    send_message(net_data->sock, buffer, &net_data->peer_addr);
+
     while(1)
     {
         const char *token_x;
@@ -61,7 +65,7 @@ static void *networking_thread(void *arg)
         send_message(net_data->sock, buffer, &net_data->peer_addr);
         nanosleep(&req, NULL);
     }
-    return NULL;    // Ensure a return statement
+    return NULL;
 }
 
 int main(void)
