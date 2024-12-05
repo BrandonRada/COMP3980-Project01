@@ -18,14 +18,13 @@
 #define BUFSIZE 1024
 #define TEN 10
 #define FIVETY 50000000L
-#define PEERADDR "192.168.44.8"    // or your IPv6 address
 
 struct network_data
 {
-    int                     sock;
-    struct addrinfo        *peer_info;
-    struct sockaddr_storage my_addr;
-    struct player          *remote_player;
+    int                sock;
+    struct sockaddr_in peer_addr;
+    struct sockaddr_in my_addr;
+    struct player     *remote_player;
 };
 
 static void *networking_thread(void *arg)
@@ -33,23 +32,19 @@ static void *networking_thread(void *arg)
     struct network_data *net_data = (struct network_data *)arg;
     char                 buffer[BUFSIZE];
     struct timespec      req = {0, FIVETY};
-
     while(1)
     {
         const char *token_x;
         const char *token_y;
-        char       *saveptr1;
-        char       *saveptr2;
-
+        char        saveptr1[BUFSIZE];
+        char        saveptr2[BUFSIZE];
         receive_message(net_data->sock, buffer, &net_data->my_addr);
-        token_x = strtok_r(buffer, ":", &saveptr1);
-        token_y = strtok_r(NULL, ":", &saveptr2);
-
+        token_x = strtok_r(buffer, ":", (char **)&saveptr1);
+        token_y = strtok_r(NULL, ":", (char **)&saveptr2);
         if(token_x && token_y)
         {
             long temp_x = strtol(token_x, NULL, TEN);
             long temp_y = strtol(token_y, NULL, TEN);
-
             if(temp_x <= INT_MAX && temp_x >= INT_MIN)
             {
                 net_data->remote_player->x = (int)temp_x;
@@ -59,12 +54,10 @@ static void *networking_thread(void *arg)
                 net_data->remote_player->y = (int)temp_y;
             }
         }
-
         snprintf(buffer, sizeof(buffer), "%d:%d", net_data->remote_player->x, net_data->remote_player->y);
-        send_message(net_data->sock, buffer, net_data->peer_info);
+        send_message(net_data->sock, buffer, &net_data->peer_addr);
         nanosleep(&req, NULL);
     }
-    return NULL;
 }
 
 int main(void)
@@ -77,10 +70,10 @@ int main(void)
     SDL_Event           event;
 
     int                 sock;
-    struct addrinfo    *peer_info;
+    struct sockaddr_in  peer_addr;
+    struct sockaddr_in  my_addr;
     pthread_t           net_thread;
     struct network_data net_data;
-    struct addrinfo     hints;
 
     initscr();
     refresh();
@@ -120,20 +113,14 @@ int main(void)
         mvprintw(1, 1, "No game controllers connected.\n");
     }
 
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family   = AF_UNSPEC;
-    hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_flags    = AI_PASSIVE;
-
-    sock = create_socket(&hints);
-    bind_socket(sock, &hints);
-
-    // To connect to an IPv4 address:
-    configure_peer_addr(&peer_info, PEERADDR);
+    sock = create_socket();
+    bind_socket(sock, &my_addr);
+    configure_peer_addr(&peer_addr);
 
     // Setup network data and create networking thread
     net_data.sock          = sock;
-    net_data.peer_info     = peer_info;
+    net_data.peer_addr     = peer_addr;
+    net_data.my_addr       = my_addr;
     net_data.remote_player = &remote_player;
     pthread_create(&net_thread, NULL, networking_thread, &net_data);
 
