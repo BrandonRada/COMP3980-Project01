@@ -3,6 +3,30 @@
 //
 
 #include "../include/PearToPear.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-default"
+#ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wreserved-macro-identifier"
+    #pragma clang diagnostic ignored "-Wreserved-identifier"
+    #pragma clang diagnostic ignored "-Wdocumentation-unknown-command"
+#endif
+#include <SDL2/SDL.h>
+#pragma GCC diagnostic pop
+#ifdef __clang__
+    #pragma clang diagnostic pop
+#endif
+#include <arpa/inet.h>
+#include <curses.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <termios.h>
+#include <unistd.h>
 
 #define PORT 8080
 #define BUFSIZE 1024
