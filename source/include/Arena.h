@@ -9,10 +9,10 @@
 
 struct arena
 {
-    /*__attribute__((unused)) */ int max_x;
-    /*__attribute__((unused)) */ int max_y;
-    /*__attribute__((unused)) */ int min_x;
-    /*__attribute__((unused)) */ int min_y;
+    int max_x;
+    int max_y;
+    int min_x;
+    int min_y;
     int window_old_x;
     int window_old_y;
     int window_new_x;

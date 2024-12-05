@@ -15,9 +15,7 @@
 
 void handle_input(SDL_GameController **controller, SDL_Event *event, struct player *local_player, const struct arena *local_arena)
 {
-    // int ch;
     nodelay(stdscr, TRUE);
-    // ch                   = getch();
     local_player->temp_x = local_player->x;
     local_player->temp_y = local_player->y;
 
@@ -45,44 +43,9 @@ void handle_input(SDL_GameController **controller, SDL_Event *event, struct play
         }
     }
 
-    // TESTING
-    // if(*controller)
-    // {
-    //     double joystick_distance = 0;
-    //     nodelay(stdscr, TRUE);
-    //     get_joystick_distance(*controller, &joystick_distance);
-    //
-    //     if(joystick_distance >= THRESH)
-    //     {
-    //         nodelay(stdscr, FALSE);
-    //         handle_controller_input(*controller, event, local_player, local_arena);
-    //     }
-    //     else
-    //     {
-    //         nodelay(stdscr, TRUE);
-    //         mvprintw(1, 1, "Controller connected, but no joystick input detected.\n");
-    //         // Check for keyboard input fallback
-    //         if(ch == KEY_UP || ch == KEY_DOWN || ch == KEY_LEFT || ch == KEY_RIGHT)
-    //         {
-    //             handle_keyboard_input(local_player, local_arena);
-    //         }
-    //     }
-    // }
-    // else
-    // {
-    //     nodelay(stdscr, TRUE);
-    //     mvprintw(1, 1, "Controller disconnected.\n");
-    //     // Handle keyboard input if no controller is connected
-    //     if(ch == KEY_UP || ch == KEY_DOWN || ch == KEY_LEFT || ch == KEY_RIGHT)
-    //     {
-    //         handle_keyboard_input(local_player, local_arena);
-    //     }
-    // }
-
-    ///
     if(*controller)
     {
-        handle_controller_input(*controller, event, local_player, local_arena);
+        handle_controller_input(*controller, local_player, local_arena);
         handle_keyboard_input(local_player, local_arena);
     }
     else
@@ -90,19 +53,6 @@ void handle_input(SDL_GameController **controller, SDL_Event *event, struct play
         handle_keyboard_input(local_player, local_arena);
     }
 
-    // if(*controller)
-    // {
-    //     handle_controller_input(*controller, event, local_player, local_arena);
-    // }
-    // else
-    // {
-    //     mvprintw(1, 1, "Controller disconnected.\n");
-    // }
-    // if(ch == KEY_UP || ch == KEY_DOWN || ch == KEY_LEFT || ch == KEY_RIGHT)
-    // {
-    //     // handle_keyboard_input(event, local_player, local_arena);
-    //     handle_keyboard_input(local_player, local_arena);
-    // }
     // Update player's position
     mvprintw(local_player->y, local_player->x, " ");
     local_player->x = local_player->temp_x;
@@ -110,7 +60,7 @@ void handle_input(SDL_GameController **controller, SDL_Event *event, struct play
     mvprintw(local_player->y, local_player->x, "%s", local_player->player_char);
 }
 
-void handle_controller_input(SDL_GameController *controller, const SDL_Event *event, struct player *local_player, const struct arena *local_arena)
+void handle_controller_input(SDL_GameController *controller, struct player *local_player, const struct arena *local_arena)
 {
     double distance = 0;
     int    angle    = 0;
@@ -155,55 +105,13 @@ void handle_controller_input(SDL_GameController *controller, const SDL_Event *ev
             local_player->temp_x = local_player->x;
         }
     }
-
-    // DPad movement, currently broken
-    if(event->type == SDL_CONTROLLERBUTTONDOWN)
-    {
-        if(event->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_UP)
-        {
-            local_player->temp_y = local_player->y - 1;
-            if(local_player->temp_y <= local_arena->min_y)
-            {
-                local_player->temp_y = local_player->y;
-            }
-        }
-        else if(event->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN)
-        {
-            local_player->temp_y = local_player->y + 1;
-            if(local_player->temp_y >= local_arena->max_y)
-            {
-                local_player->temp_y = local_player->y;
-            }
-        }
-        if(event->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT)
-        {
-            local_player->temp_x = local_player->x + 1;
-            if(local_player->temp_x >= local_arena->max_x)
-            {
-                local_player->temp_x = local_player->x;
-            }
-        }
-        else if(event->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT)
-        {
-            local_player->temp_x = local_player->x - 1;
-            if(local_player->temp_x <= local_arena->min_x)
-            {
-                local_player->temp_x = local_player->x;
-            }
-        }
-    }
 }
 
-// void handle_keyboard_input(const SDL_Event *event, struct player *local_player, const struct arena *local_arena)
 void handle_keyboard_input(struct player *local_player, const struct arena *local_arena)
 
 {
     int ch;
     ch = getch();
-    // if()
-    // {
-
-    // }
     if(ch == KEY_UP)
     {
         local_player->temp_y = local_player->y - 1;
@@ -236,39 +144,6 @@ void handle_keyboard_input(struct player *local_player, const struct arena *loca
             local_player->temp_x = local_arena->max_x;
         }
     }
-    // // Keyboard input is currently broken
-    // if(event->key.keysym.sym == SDLK_w || event->key.keysym.sym == SDLK_UP)
-    // {
-    //     local_player->temp_y = local_player->y - 1;
-    //     if(local_player->temp_y < local_arena->min_y)
-    //     {
-    //         local_player->temp_y = local_arena->min_y;
-    //     }
-    // }
-    // else if(event->key.keysym.sym == SDLK_s || event->key.keysym.sym == SDLK_DOWN)
-    // {
-    //     local_player->temp_y = local_player->y + 1;
-    //     if(local_player->temp_y > local_arena->max_y)
-    //     {
-    //         local_player->temp_y = local_arena->max_y;
-    //     }
-    // }
-    // if(event->key.keysym.sym == SDLK_a || event->key.keysym.sym == SDLK_LEFT)
-    // {
-    //     local_player->temp_x = local_player->x - 1;
-    //     if(local_player->temp_x < local_arena->min_x)
-    //     {
-    //         local_player->temp_x = local_arena->min_x;
-    //     }
-    // }
-    // else if(event->key.keysym.sym == SDLK_d || event->key.keysym.sym == SDLK_RIGHT)
-    // {
-    //     local_player->temp_x = local_player->x + 1;
-    //     if(local_player->temp_x > local_arena->max_x)
-    //     {
-    //         local_player->temp_x = local_arena->max_x;
-    //     }
-    // }
 }
 
 // Gets the joysticks distance from idle
