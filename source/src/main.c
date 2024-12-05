@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     SDL_Event           event;
 
     int                opt;
-    const char        *peer_addr_str = DEFAULT_PEER_ADDR;
+    const char        *peer_addr_str = NULL;
     int                sock;
     struct sockaddr_in peer_addr;
     struct sockaddr_in my_addr;
@@ -45,6 +45,10 @@ int main(int argc, char *argv[])
         if(opt == 'a')
         {
             peer_addr_str = optarg;
+        }
+        else
+        {
+            peer_addr_str = DEFAULT_PEER_ADDR;
         }
     }
 
