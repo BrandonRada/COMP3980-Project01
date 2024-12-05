@@ -6,7 +6,8 @@
 
 #define PORT 8080
 #define BUFSIZE 1024
-#define PEER_ADDR "192.168.44.8"    // Address of the peer
+#define PEER_ADDR "192.168.0.79"    // Address of the peer
+
 // 192.168.44.23
 int create_socket(void)
 {

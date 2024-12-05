@@ -36,11 +36,13 @@ static void *networking_thread(void *arg)
     {
         const char *token_x;
         const char *token_y;
-        char        saveptr1[BUFSIZE];
-        char        saveptr2[BUFSIZE];
+        char       *saveptr1 = NULL;
+        char       *saveptr2 = NULL;
+
         receive_message(net_data->sock, buffer, &net_data->my_addr);
-        token_x = strtok_r(buffer, ":", (char **)&saveptr1);
-        token_y = strtok_r(NULL, ":", (char **)&saveptr2);
+        token_x = strtok_r(buffer, ":", &saveptr1);
+        token_y = strtok_r(NULL, ":", &saveptr2);
+
         if(token_x && token_y)
         {
             long temp_x = strtol(token_x, NULL, TEN);
@@ -58,6 +60,7 @@ static void *networking_thread(void *arg)
         send_message(net_data->sock, buffer, &net_data->peer_addr);
         nanosleep(&req, NULL);
     }
+    return NULL;    // Ensure a return statement
 }
 
 int main(void)
@@ -135,7 +138,8 @@ int main(void)
         {
             local_arena.window_changed = true;
         }
-        getmaxyx(stdscr, local_arena.window_old_x, local_arena.window_old_y);
+        local_arena.window_old_x = local_arena.window_new_x;
+        local_arena.window_old_y = local_arena.window_new_y;
 
         draw(&local_arena);
         handle_input(&controller, &event, &local_player, &local_arena);
