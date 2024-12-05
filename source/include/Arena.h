@@ -1,6 +1,7 @@
 #ifndef MAIN_ARENA_H
 #define MAIN_ARENA_H
 
+#include "../include/Player.h"
 #include <SDL2/SDL.h>
 #include <curses.h>
 #include <signal.h>
@@ -20,6 +21,6 @@ struct arena
     bool window_changed;
 };
 
-void draw(struct arena *local_arena);
+void draw(struct arena *local_arena, struct player *remote_player, char *buffer);
 
 #endif    // MAIN_ARENA_H
