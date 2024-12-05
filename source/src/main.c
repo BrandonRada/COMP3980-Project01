@@ -122,9 +122,9 @@ int main(void)
                 sock = create_socket();
                 bind_socket(sock, &my_addr);
                 configure_peer_addr(&peer_addr);
-                snprintf(buffer, sizeof(buffer), "%d:%d", (int)local_player.x, (int)local_player.y);
-                send_message(sock, buffer, &peer_addr);
             }
+            snprintf(buffer, sizeof(buffer), "%d:%d", (int)local_player.x, (int)local_player.y);
+            send_message(sock, buffer, &peer_addr);
         }
 
         mvprintw((int)remote_player.y, (int)remote_player.x, "%s", remote_player.player_char);
