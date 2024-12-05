@@ -1,7 +1,6 @@
 #include "../include/HandleInput.h"
 #include "../include/Arena.h"
 
-
 #define SDL_CONTROLLER_AXIS_MAX 32767
 #define D_MAX 360
 #define D_HALF 180

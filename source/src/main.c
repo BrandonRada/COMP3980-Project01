@@ -1,23 +1,33 @@
 #include "../include/Arena.h"
 #include "../include/HandleInput.h"
+#include "../include/PearToPear.h"
 #include "../include/Player.h"
 #include <SDL2/SDL.h>
+#include <arpa/inet.h>
 #include <curses.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 
 #define NANO 1000000000
 #define FIXED_UPDATE (NANO / 30)
+#define BUFSIZE 1024
 
 int main(void)
 {
     struct player       local_player;
+    struct player       remote_player;
     struct arena        local_arena;
     struct timespec     ts;
     SDL_GameController *controller = NULL;
     SDL_Event           event;
+
+    int                sock;
+    struct sockaddr_in peer_addr;
+    struct sockaddr_in my_addr;
+    char               buffer[BUFSIZE];
 
     initscr();
     refresh();
@@ -29,9 +39,12 @@ int main(void)
     ts.tv_nsec = FIXED_UPDATE % NANO;
 
     getmaxyx(stdscr, local_arena.max_y, local_arena.max_x);
-    local_player.player_char = "+";
-    local_player.x           = local_arena.max_x / 2;
-    local_player.y           = local_arena.max_y / 2;
+    local_player.player_char  = "+";
+    local_player.x            = local_arena.max_x / 2;
+    local_player.y            = local_arena.max_y / 2;
+    remote_player.player_char = "O";
+    remote_player.x           = local_arena.max_x / 4;
+    remote_player.y           = local_arena.max_y / 4;
 
     if(SDL_Init(SDL_INIT_GAMECONTROLLER) != 0)
     {
@@ -54,8 +67,14 @@ int main(void)
         mvprintw(1, 1, "No game controllers connected.\n");
     }
 
+    sock = create_socket();
+    bind_socket(sock, &my_addr);
+    configure_peer_addr(&peer_addr);
+
     mvprintw(local_player.y, local_player.x, "%s", local_player.player_char);
+    mvprintw(remote_player.y, remote_player.x, "%s", remote_player.player_char);
     getmaxyx(stdscr, local_arena.window_old_y, local_arena.window_old_x);
+
     while(1)
     {
         getmaxyx(stdscr, local_arena.window_new_y, local_arena.window_new_x);
@@ -64,9 +83,19 @@ int main(void)
             local_arena.window_changed = true;
         }
         getmaxyx(stdscr, local_arena.window_old_x, local_arena.window_old_y);
+
         draw(&local_arena);
         handle_input(&controller, &event, &local_player, &local_arena);
+
+        snprintf(buffer, sizeof(buffer), "%d:%d", local_player.x, local_player.y);
+        send_message(sock, buffer, &peer_addr);
+
+        receive_message(sock, buffer, &peer_addr);
+        snprintf(buffer, sizeof(buffer), "%d:%d", local_player.x, local_player.y);
+
         draw(&local_arena);
+        mvprintw(remote_player.y, remote_player.x, "%s", remote_player.player_char);
+
         nanosleep(&ts, NULL);
     }
 }
