@@ -14,11 +14,14 @@
 #define NINE 9
 
 // #define TEN 10
+#ifndef SOCK_CLOEXEC
+    #define SOCK_CLOEXEC 02000000
+#endif
 
 int create_socket(void)
 {
     int flags;
-    int sock = socket(AF_INET, SOCK_DGRAM, 0);
+    int sock = socket(AF_INET, SOCK_CLOEXEC, 0);
     if(sock < 0)
     {
         mvprintw(4, 2, "Socket creation failed");
