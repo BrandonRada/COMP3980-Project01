@@ -1,3 +1,7 @@
+//
+// Created by jonathan on 12/4/24.
+//
+
 #ifndef MAIN_PEARTOPEAR_H
 #define MAIN_PEARTOPEAR_H
 
@@ -11,7 +15,6 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <termios.h>
-#include <time.h>
 #include <unistd.h>
 
 int  create_socket(void);
