@@ -77,7 +77,11 @@ int main(void)
 
     while(1)
     {
-        draw(&local_arena, &remote_player, buffer);
+        const char *token_x = NULL;
+        const char *token_y = NULL;
+        char       *saveptr = NULL;
+
+        draw(&local_arena);
         handle_input(&controller, &event, &local_player, &local_arena);
 
         snprintf(buffer, sizeof(buffer), "%d:%d", local_player.x, local_player.y);
@@ -85,40 +89,26 @@ int main(void)
 
         // Receive the remote player's position
         receive_message(sock, buffer, &peer_addr);
-        draw(&local_arena, &remote_player, buffer);
+
+        // Extract x and y values from the buffer using strtok_r
+        token_x = strtok_r(buffer, ":", &saveptr);
+        token_y = strtok_r(NULL, ":", &saveptr);
+
+        if(token_x != NULL && token_y != NULL)
+        {
+            remote_player.x = (int)strtol(token_x, NULL, TEN);
+            remote_player.y = (int)strtol(token_y, NULL, TEN);
+        }
+
         mvprintw(remote_player.y, remote_player.x, "%s", remote_player.player_char);
+        draw(&local_arena);
 
         nanosleep(&ts, NULL);
     }
 }
 
-void draw(struct arena *local_arena, struct player *remote_player, char *buffer)
+void draw(struct arena *local_arena)
 {
-    const char *token_x = NULL;
-    const char *token_y = NULL;
-    char       *saveptr = NULL;
-    getmaxyx(stdscr, local_arena->max_y, local_arena->max_x);
-    local_arena->max_x--;
-    local_arena->max_y--;
-    local_arena->min_x = 0;
-    local_arena->min_y = 0;
-    curs_set(0);
-    box(stdscr, 0, 0);
-    // Extract x and y values from the buffer using strtok_r
-    token_x = strtok_r(buffer, ":", &saveptr);
-    token_y = strtok_r(NULL, ":", &saveptr);
-
-    if(token_x != NULL && token_y != NULL)
-    {
-        remote_player->x = (int)strtol(token_x, NULL, TEN);
-        remote_player->y = (int)strtol(token_y, NULL, TEN);
-    }
-    refresh();
-    if(local_arena->window_changed == true)
-    {
-        local_arena->window_changed = false;
-        erase();
-    }
     getmaxyx(stdscr, local_arena->window_new_y, local_arena->window_new_x);
     if(local_arena->window_new_x != local_arena->window_old_x || local_arena->window_new_y != local_arena->window_old_y)
     {
@@ -126,4 +116,17 @@ void draw(struct arena *local_arena, struct player *remote_player, char *buffer)
     }
     getmaxyx(stdscr, local_arena->window_old_x, local_arena->window_old_y);
 
+    getmaxyx(stdscr, local_arena->max_y, local_arena->max_x);
+    local_arena->max_x--;
+    local_arena->max_y--;
+    local_arena->min_x = 0;
+    local_arena->min_y = 0;
+    curs_set(0);
+    box(stdscr, 0, 0);
+    refresh();
+    if(local_arena->window_changed == true)
+    {
+        local_arena->window_changed = false;
+        erase();
+    }
 }
