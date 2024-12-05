@@ -1,1 +1,1 @@
-main src/main.c src/HandleInput.c src/PearToPear.c include/HandleInput.h include/PearToPear.h include/Player.h include/Arena.h SDL2 curses m
+main src/main.c src/HandleInput.c src/PearToPear.c include/HandleInput.h include/PearToPear.h include/Player.h include/Arena.h SDL2 ncurses curses m
