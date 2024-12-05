@@ -66,8 +66,8 @@ static void *networking_thread(void *arg)
 
 int main(void)
 {
-    struct player       local_player;
-    struct player       remote_player;
+    struct player local_player;
+    // struct player       remote_player;
     struct arena        local_arena;
     struct timespec     ts;
     SDL_GameController *controller = NULL;
@@ -89,12 +89,12 @@ int main(void)
     ts.tv_nsec = FIXED_UPDATE % NANO;
 
     getmaxyx(stdscr, local_arena.max_y, local_arena.max_x);
-    local_player.player_char  = "+";
-    local_player.x            = local_arena.max_x / 2;
-    local_player.y            = local_arena.max_y / 2;
-    remote_player.player_char = "O";
-    remote_player.x           = local_arena.max_x / 4;
-    remote_player.y           = local_arena.max_y / 4;
+    local_player.player_char = "+";
+    local_player.x           = local_arena.max_x / 2;
+    local_player.y           = local_arena.max_y / 2;
+    // remote_player.player_char = "O";
+    // remote_player.x           = local_arena.max_x / 4;
+    // remote_player.y           = local_arena.max_y / 4;
 
     if(SDL_Init(SDL_INIT_GAMECONTROLLER) != 0)
     {
@@ -122,14 +122,14 @@ int main(void)
     configure_peer_addr(&peer_addr);
 
     // Setup network data and create networking thread
-    net_data.sock          = sock;
-    net_data.peer_addr     = peer_addr;
-    net_data.my_addr       = my_addr;
-    net_data.remote_player = &remote_player;
+    net_data.sock      = sock;
+    net_data.peer_addr = peer_addr;
+    net_data.my_addr   = my_addr;
+    // net_data.remote_player = &remote_player;
     pthread_create(&net_thread, NULL, networking_thread, &net_data);
 
     mvprintw(local_player.y, local_player.x, "%s", local_player.player_char);
-    mvprintw(remote_player.y, remote_player.x, "%s", remote_player.player_char);
+    // mvprintw(remote_player.y, remote_player.x, "%s", remote_player.player_char);
     getmaxyx(stdscr, local_arena.window_old_y, local_arena.window_old_x);
 
     while(1)
@@ -146,7 +146,7 @@ int main(void)
         handle_input(&controller, &event, &local_player, &local_arena);
 
         draw(&local_arena);
-        mvprintw(remote_player.y, remote_player.x, "%s", remote_player.player_char);
+        // mvprintw(remote_player.y, remote_player.x, "%s", remote_player.player_char);
 
         nanosleep(&ts, NULL);
     }

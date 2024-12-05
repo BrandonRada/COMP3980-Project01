@@ -11,6 +11,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <termios.h>
+#include <time.h>
 #include <unistd.h>
 
 int  create_socket(void);
