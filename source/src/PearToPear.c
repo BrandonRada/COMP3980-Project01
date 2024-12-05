@@ -61,7 +61,7 @@ void configure_peer_addr(struct sockaddr_in *peer_addr)
 void receive_message(int sock, char *buffer, struct sockaddr_in *src_addr)
 {
     socklen_t src_addr_len = sizeof(*src_addr);
-    ssize_t bytes_read;
+    ssize_t   bytes_read;
 
     // Initialize src_addr to zero
     memset(src_addr, 0, sizeof(*src_addr));
@@ -92,4 +92,3 @@ void send_message(int sock, const char *message, const struct sockaddr_in *peer_
         perror("Message sending failed");
     }
 }
-
