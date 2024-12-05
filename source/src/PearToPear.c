@@ -7,8 +7,8 @@
 
 #define PORT 8080
 #define BUFSIZE 1024
-#define PEER_ADDR "192.168.0.149"
-// #define PEER_ADDR "192.168.0.79"
+// #define PEER_ADDR "192.168.0.149"
+#define PEER_ADDR "192.168.0.79"
 #define FIVE 5
 #define SIX 6
 #define SEVEN 7
