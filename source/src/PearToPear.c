@@ -89,7 +89,7 @@ int receive_message(int sock, char *buffer, struct sockaddr_in *src_addr)
     bytes_read = recvfrom(sock, buffer, BUFSIZE, 0, (struct sockaddr *)src_addr, &src_addr_len);
     if (bytes_read < 0)
     {
-        mvprintw(7, 1, "Receive failed");
+        mvprintw(SEVEN, 1, "Receive failed");
     }
 
     if (bytes_read > 0)
@@ -99,7 +99,7 @@ int receive_message(int sock, char *buffer, struct sockaddr_in *src_addr)
         // Compare the received IP address with PEER_ADDR
         if (strcmp(inet_ntoa(src_addr->sin_addr), PEER_ADDR) == 0)
         {
-            mvprintw(7, 1, "Message received from %s:%u: %s", inet_ntoa(src_addr->sin_addr), ntohs(src_addr->sin_port), buffer);
+            mvprintw(SEVEN, 1, "Message received from %s:%u: %s", inet_ntoa(src_addr->sin_addr), ntohs(src_addr->sin_port), buffer);
             return 0;
         }
     }
