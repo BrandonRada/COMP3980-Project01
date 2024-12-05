@@ -3,6 +3,7 @@
 //
 
 #include "../include/PearToPear.h"
+#include <errno.h>
 
 #define PORT 8080
 #define BUFSIZE 1024
@@ -18,13 +19,23 @@
 
 int create_socket(void)
 {
+    int flags;
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if(sock < 0)
     {
         mvprintw(4, 1, "Socket creation failed");
         exit(EXIT_FAILURE);
     }
-    mvprintw(4, 1, "Socket created!");
+
+    // Set socket to non-blocking mode
+    flags = fcntl(sock, F_GETFL, 0);
+    if(flags < 0 || fcntl(sock, F_SETFL, flags | O_NONBLOCK) < 0)
+    {
+        mvprintw(4, 1, "Failed to set non-blocking mode");
+        exit(EXIT_FAILURE);
+    }
+
+    mvprintw(4, 1, "Socket created and set to non-blocking mode!");
     return sock;
 }
 
@@ -66,29 +77,36 @@ void configure_peer_addr(struct sockaddr_in *peer_addr)
     mvprintw(SIX, 1, "Peer address configured to: %s, port: %u", PEER_ADDR, ntohs(peer_addr->sin_port));
 }
 
-void receive_message(int sock, char *buffer, struct sockaddr_in *src_addr)
+int receive_message(int sock, char *buffer, struct sockaddr_in *src_addr)
 {
     socklen_t src_addr_len = sizeof(*src_addr);
-    ssize_t   bytes_read;
+    ssize_t bytes_read;
 
     // Initialize src_addr to zero
     memset(src_addr, 0, sizeof(*src_addr));
 
-    mvprintw(SEVEN, 1, "Waiting to receive message...");
+    // Receive data
     bytes_read = recvfrom(sock, buffer, BUFSIZE, 0, (struct sockaddr *)src_addr, &src_addr_len);
-    if(bytes_read < 0)
+    if (bytes_read < 0)
     {
-        mvprintw(SEVEN, 1, "Receive failed");
-        return;
+        mvprintw(7, 1, "Receive failed");
     }
 
-    if(bytes_read > 0)
+    if (bytes_read > 0)
     {
         buffer[bytes_read] = '\0';
 
-        mvprintw(SEVEN, 1, "Message received from %s:%u: %s", inet_ntoa(src_addr->sin_addr), ntohs(src_addr->sin_port), buffer);
+        // Compare the received IP address with PEER_ADDR
+        if (strcmp(inet_ntoa(src_addr->sin_addr), PEER_ADDR) == 0)
+        {
+            mvprintw(7, 1, "Message received from %s:%u: %s", inet_ntoa(src_addr->sin_addr), ntohs(src_addr->sin_port), buffer);
+            return 0;
+        }
     }
+    return 1;
 }
+
+
 
 void send_message(int sock, const char *message, const struct sockaddr_in *peer_addr)
 {

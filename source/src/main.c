@@ -80,6 +80,7 @@ int main(void)
         const char *token_x = NULL;
         const char *token_y = NULL;
         char       *saveptr = NULL;
+        int valid_msg = 1;
 
         draw(&local_arena);
         handle_input(&controller, &event, &local_player, &local_arena);
@@ -88,16 +89,19 @@ int main(void)
         send_message(sock, buffer, &peer_addr);
 
         // Receive the remote player's position
-        receive_message(sock, buffer, &peer_addr);
+        valid_msg = receive_message(sock, buffer, &peer_addr);
 
-        // Extract x and y values from the buffer using strtok_r
-        token_x = strtok_r(buffer, ":", &saveptr);
-        token_y = strtok_r(NULL, ":", &saveptr);
-
-        if(token_x != NULL && token_y != NULL)
+        if (valid_msg == 0)
         {
-            remote_player.x = (int)strtol(token_x, NULL, TEN);
-            remote_player.y = (int)strtol(token_y, NULL, TEN);
+            // Extract x and y values from the buffer using strtok_r
+            token_x = strtok_r(buffer, ":", &saveptr);
+            token_y = strtok_r(NULL, ":", &saveptr);
+            // update remote_players position
+            if(token_x != NULL && token_y != NULL)
+            {
+                remote_player.x = (int)strtol(token_x, NULL, TEN);
+                remote_player.y = (int)strtol(token_y, NULL, TEN);
+            }
         }
 
         mvprintw(remote_player.y, remote_player.x, "%s", remote_player.player_char);
