@@ -32,6 +32,7 @@ static void *networking_thread(void *arg)
     struct network_data *net_data = (struct network_data *)arg;
     char                 buffer[BUFSIZE];
     struct timespec      req = {0, FIVETY};
+
     while(1)
     {
         const char *token_x;

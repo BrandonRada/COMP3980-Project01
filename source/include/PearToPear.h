@@ -1,7 +1,3 @@
-//
-// Created by jonathan on 12/4/24.
-//
-
 #ifndef MAIN_PEARTOPEAR_H
 #define MAIN_PEARTOPEAR_H
 
