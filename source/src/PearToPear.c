@@ -7,8 +7,8 @@
 
 #define PORT 8080
 #define BUFSIZE 1024
-// #define PEER_ADDR "192.168.0.149"
-#define PEER_ADDR "192.168.0.79"
+#define PEER_ADDR "192.168.0.149"
+// #define PEER_ADDR "192.168.0.79"
 #define FIVE 5
 #define SIX 6
 #define SEVEN 7
@@ -102,11 +102,6 @@ int receive_message(int sock, char *buffer, struct sockaddr_in *src_addr)
 
 void send_message(int sock, const char *message, const struct sockaddr_in *peer_addr)
 {
-    ssize_t sent_bytes;
     mvprintw(ATE, 1, "Sending message: %s", message);
-    sent_bytes = sendto(sock, message, strlen(message), 0, (const struct sockaddr *)peer_addr, sizeof(struct sockaddr_in));
-    if(sent_bytes < 0)
-    {
-        mvprintw(ATE, 1, "Message sending failed");
-    }
+    sendto(sock, message, strlen(message), 0, (const struct sockaddr *)peer_addr, sizeof(struct sockaddr_in));
 }

@@ -12,7 +12,8 @@
 #include <unistd.h>
 
 #define NANO 1000000000
-#define FIXED_UPDATE (NANO / 30)
+#define FPS 15
+#define FIXED_UPDATE (NANO / FPS)
 #define BUFSIZE 1024
 #define TEN 10
 
@@ -29,6 +30,7 @@ int main(void)
     struct sockaddr_in peer_addr;
     struct sockaddr_in my_addr;
     char               buffer[BUFSIZE];
+    long               timer;
 
     initscr();
     refresh();
@@ -46,7 +48,7 @@ int main(void)
     remote_player.player_char = "O";
     remote_player.x           = -1;
     remote_player.y           = -1;
-
+    timer                     = 0;
     if(SDL_Init(SDL_INIT_GAMECONTROLLER) != 0)
     {
         mvprintw(1, 1, "SDL_Init Error: %s\n", SDL_GetError());
@@ -77,12 +79,14 @@ int main(void)
 
     while(1)
     {
-        const char *token_x   = NULL;
-        const char *token_y   = NULL;
-        char       *saveptr   = NULL;
-        int         valid_msg = 1;
+        const char *token_x = NULL;
+        const char *token_y = NULL;
+        char       *saveptr = NULL;
+        int         valid_msg;
 
         draw(&local_arena);
+        timer++;
+        mvprintw(local_arena.max_y - 1, 2, "Timer: %ld", timer / FPS);
         handle_input(&controller, &event, &local_player, &local_arena);
 
         snprintf(buffer, sizeof(buffer), "%d:%d", local_player.x, local_player.y);
