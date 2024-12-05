@@ -80,24 +80,18 @@ void configure_peer_addr(struct sockaddr_in *peer_addr)
 int receive_message(int sock, char *buffer, struct sockaddr_in *src_addr)
 {
     socklen_t src_addr_len = sizeof(*src_addr);
-    ssize_t bytes_read;
+    ssize_t   bytes_read;
 
     // Initialize src_addr to zero
     memset(src_addr, 0, sizeof(*src_addr));
 
     // Receive data
     bytes_read = recvfrom(sock, buffer, BUFSIZE, 0, (struct sockaddr *)src_addr, &src_addr_len);
-    if (bytes_read < 0)
-    {
-        mvprintw(SEVEN, 1, "Receive failed");
-    }
-
-    if (bytes_read > 0)
+    if(bytes_read > 0)
     {
         buffer[bytes_read] = '\0';
 
-        // Compare the received IP address with PEER_ADDR
-        if (strcmp(inet_ntoa(src_addr->sin_addr), PEER_ADDR) == 0)
+        if(strcmp(inet_ntoa(src_addr->sin_addr), PEER_ADDR) == 0)
         {
             mvprintw(SEVEN, 1, "Message received from %s:%u: %s", inet_ntoa(src_addr->sin_addr), ntohs(src_addr->sin_port), buffer);
             return 0;
@@ -105,8 +99,6 @@ int receive_message(int sock, char *buffer, struct sockaddr_in *src_addr)
     }
     return 1;
 }
-
-
 
 void send_message(int sock, const char *message, const struct sockaddr_in *peer_addr)
 {
