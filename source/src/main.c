@@ -5,6 +5,8 @@
 #include <SDL2/SDL.h>
 #include <arpa/inet.h>
 #include <curses.h>
+#include <limits.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,20 +16,64 @@
 #define NANO 1000000000
 #define FIXED_UPDATE (NANO / 30)
 #define BUFSIZE 1024
+#define TEN 10
+#define FIVETY 50000000L
+
+struct network_data
+{
+    int                sock;
+    struct sockaddr_in peer_addr;
+    struct sockaddr_in my_addr;
+    struct player     *remote_player;
+};
+
+static void *networking_thread(void *arg)
+{
+    struct network_data *net_data = (struct network_data *)arg;
+    char                 buffer[BUFSIZE];
+    struct timespec      req = {0, FIVETY};
+    while(1)
+    {
+        const char *token_x;
+        const char *token_y;
+        char        saveptr1[BUFSIZE];
+        char        saveptr2[BUFSIZE];
+        receive_message(net_data->sock, buffer, &net_data->my_addr);
+        token_x = strtok_r(buffer, ":", (char **)&saveptr1);
+        token_y = strtok_r(NULL, ":", (char **)&saveptr2);
+        if(token_x && token_y)
+        {
+            long temp_x = strtol(token_x, NULL, TEN);
+            long temp_y = strtol(token_y, NULL, TEN);
+            if(temp_x <= INT_MAX && temp_x >= INT_MIN)
+            {
+                net_data->remote_player->x = (int)temp_x;
+            }
+            if(temp_y <= INT_MAX && temp_y >= INT_MIN)
+            {
+                net_data->remote_player->y = (int)temp_y;
+            }
+        }
+        snprintf(buffer, sizeof(buffer), "%d:%d", net_data->remote_player->x, net_data->remote_player->y);
+        send_message(net_data->sock, buffer, &net_data->peer_addr);
+        nanosleep(&req, NULL);
+    }
+}
 
 int main(void)
 {
-    struct player local_player;
-    // struct player       remote_player;
+    struct player       local_player;
+    struct player       remote_player;
     struct arena        local_arena;
     struct timespec     ts;
     SDL_GameController *controller = NULL;
     SDL_Event           event;
 
-    int                sock;
-    struct sockaddr_in peer_addr;
-    struct sockaddr_in my_addr;
-    char               buffer[BUFSIZE];
+    int                 sock;
+    struct sockaddr_in  peer_addr;
+    struct sockaddr_in  my_addr;
+    pthread_t           net_thread;
+    struct network_data net_data;
 
     initscr();
     refresh();
@@ -39,12 +85,12 @@ int main(void)
     ts.tv_nsec = FIXED_UPDATE % NANO;
 
     getmaxyx(stdscr, local_arena.max_y, local_arena.max_x);
-    local_player.player_char = "+";
-    local_player.x           = local_arena.max_x / 2;
-    local_player.y           = local_arena.max_y / 2;
-    // remote_player.player_char = "O";
-    // remote_player.x           = local_arena.max_x / 4;
-    // remote_player.y           = local_arena.max_y / 4;
+    local_player.player_char  = "+";
+    local_player.x            = local_arena.max_x / 2;
+    local_player.y            = local_arena.max_y / 2;
+    remote_player.player_char = "O";
+    remote_player.x           = local_arena.max_x / 4;
+    remote_player.y           = local_arena.max_y / 4;
 
     if(SDL_Init(SDL_INIT_GAMECONTROLLER) != 0)
     {
@@ -71,8 +117,15 @@ int main(void)
     bind_socket(sock, &my_addr);
     configure_peer_addr(&peer_addr);
 
+    // Setup network data and create networking thread
+    net_data.sock          = sock;
+    net_data.peer_addr     = peer_addr;
+    net_data.my_addr       = my_addr;
+    net_data.remote_player = &remote_player;
+    pthread_create(&net_thread, NULL, networking_thread, &net_data);
+
     mvprintw(local_player.y, local_player.x, "%s", local_player.player_char);
-    // mvprintw(remote_player.y, remote_player.x, "%s", remote_player.player_char);
+    mvprintw(remote_player.y, remote_player.x, "%s", remote_player.player_char);
     getmaxyx(stdscr, local_arena.window_old_y, local_arena.window_old_x);
 
     while(1)
@@ -87,14 +140,8 @@ int main(void)
         draw(&local_arena);
         handle_input(&controller, &event, &local_player, &local_arena);
 
-        snprintf(buffer, sizeof(buffer), "%d:%d", local_player.x, local_player.y);
-        send_message(sock, buffer, &peer_addr);
-
-        receive_message(sock, buffer, &peer_addr);
-        snprintf(buffer, sizeof(buffer), "%d:%d", local_player.x, local_player.y);
-
         draw(&local_arena);
-        // mvprintw(remote_player.y, remote_player.x, "%s", remote_player.player_char);
+        mvprintw(remote_player.y, remote_player.x, "%s", remote_player.player_char);
 
         nanosleep(&ts, NULL);
     }
