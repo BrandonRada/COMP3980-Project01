@@ -1,16 +1,11 @@
-//
-// Created by jonathan on 12/4/24.
-//
-
 #include "../include/PearToPear.h"
 
-#define PORT 8080
+#define PORT "8080"
 #define BUFSIZE 1024
-#define PEER_ADDR "192.168.44.8"    // Address of the peer
-// 192.168.44.23
-int create_socket(void)
+
+int create_socket(struct addrinfo *hints)
 {
-    int sock = socket(AF_INET, SOCK_DGRAM, 0);
+    int sock = socket(hints->ai_family, hints->ai_socktype, hints->ai_protocol);
     if(sock < 0)
     {
         perror("Socket creation failed");
@@ -20,51 +15,56 @@ int create_socket(void)
     return sock;
 }
 
-void bind_socket(int sock, struct sockaddr_in *my_addr)
+void bind_socket(int sock, struct addrinfo *hints)
 {
-    socklen_t addr_len;
-    memset(my_addr, 0, sizeof(*my_addr));
-    my_addr->sin_family      = AF_INET;
-    my_addr->sin_addr.s_addr = INADDR_ANY;
-    my_addr->sin_port        = htons(PORT);
+    struct sockaddr_storage my_addr;
+    void                   *addr;
+    socklen_t               addr_len = sizeof(my_addr);
+    char                    addr_str[INET6_ADDRSTRLEN];
+    memset(&my_addr, 0, addr_len);
 
-    if(bind(sock, (const struct sockaddr *)my_addr, sizeof(*my_addr)) < 0)
+    if(bind(sock, hints->ai_addr, hints->ai_addrlen) < 0)
     {
         perror("Bind failed");
         exit(EXIT_FAILURE);
     }
 
-    // Get the assigned port number
-    addr_len = sizeof(*my_addr);
-    if(getsockname(sock, (struct sockaddr *)my_addr, &addr_len) == -1)
+    if(getsockname(sock, (struct sockaddr *)&my_addr, &addr_len) == -1)
     {
         perror("getsockname failed");
         exit(EXIT_FAILURE);
     }
 
-    mvprintw(4, 1, "Socket bound to address: %s, port: %u", inet_ntoa(my_addr->sin_addr), ntohs(my_addr->sin_port));
+    addr = (hints->ai_family == AF_INET) ? (void *)&((struct sockaddr_in *)&my_addr)->sin_addr : (void *)&((struct sockaddr_in6 *)&my_addr)->sin6_addr;
+    inet_ntop(hints->ai_family, addr, addr_str, sizeof(addr_str));
+    mvprintw(4, 1, "Socket bound to address: %s, port: %s", addr_str, PORT);
 }
 
-void configure_peer_addr(struct sockaddr_in *peer_addr)
+void configure_peer_addr(struct addrinfo **peer_info, const char *peer_addr)
 {
-    memset(peer_addr, 0, sizeof(*peer_addr));
-    peer_addr->sin_family = AF_INET;
-    peer_addr->sin_port   = htons(PORT);
-    if(inet_pton(AF_INET, PEER_ADDR, &peer_addr->sin_addr) <= 0)
+    struct addrinfo hints;
+    int             status;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family   = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
+
+    status = getaddrinfo(peer_addr, PORT, &hints, peer_info);
+    if(status != 0)
     {
-        perror("Invalid address / Address not supported");
+        fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
         exit(EXIT_FAILURE);
     }
-    mvprintw(4, 1, "Peer address configured to: %s, port: %u", PEER_ADDR, ntohs(peer_addr->sin_port));
+
+    mvprintw(4, 1, "Peer address configured to: %s, port: %s", peer_addr, PORT);
 }
 
-void receive_message(int sock, char *buffer, struct sockaddr_in *src_addr)
+void receive_message(int sock, char *buffer, struct sockaddr_storage *src_addr)
 {
-    socklen_t src_addr_len = sizeof(*src_addr);
-    ssize_t   bytes_read;
+    ssize_t bytes_read;
 
-    // Initialize src_addr to zero
-    memset(src_addr, 0, sizeof(*src_addr));
+    socklen_t src_addr_len = sizeof(*src_addr);
+
+    memset(src_addr, 0, src_addr_len);
 
     mvprintw(4, 1, "Waiting to receive message...");
     bytes_read = recvfrom(sock, buffer, BUFSIZE, 0, (struct sockaddr *)src_addr, &src_addr_len);
@@ -76,17 +76,21 @@ void receive_message(int sock, char *buffer, struct sockaddr_in *src_addr)
 
     if(bytes_read > 0)
     {
+        char  addr_str[INET6_ADDRSTRLEN];
+        void *addr;
         buffer[bytes_read] = '\0';
 
-        mvprintw(4, 1, "Message received from %s:%u: %s", inet_ntoa(src_addr->sin_addr), ntohs(src_addr->sin_port), buffer);
+        addr = (src_addr->ss_family == AF_INET) ? (void *)&((struct sockaddr_in *)src_addr)->sin_addr : (void *)&((struct sockaddr_in6 *)src_addr)->sin6_addr;
+        inet_ntop(src_addr->ss_family, addr, addr_str, sizeof(addr_str));
+        mvprintw(4, 1, "Message received from %s:%s: %s", addr_str, PORT, buffer);
     }
 }
 
-void send_message(int sock, const char *message, const struct sockaddr_in *peer_addr)
+void send_message(int sock, const char *message, const struct addrinfo *peer_info)
 {
     ssize_t sent_bytes;
     mvprintw(4, 1, "Sending message: %s", message);
-    sent_bytes = sendto(sock, message, strlen(message), 0, (const struct sockaddr *)peer_addr, sizeof(struct sockaddr_in));
+    sent_bytes = sendto(sock, message, strlen(message), 0, peer_info->ai_addr, peer_info->ai_addrlen);
     if(sent_bytes < 0)
     {
         perror("Message sending failed");
