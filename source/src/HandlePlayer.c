@@ -63,7 +63,6 @@ void handle_remote_player(struct player *remote_player, struct arena *local_aren
         }
         snprintf(net_socket->buffer, sizeof(net_socket->buffer), "%d:%d", local_arena->min_x, local_arena->min_y);
         write_socket(net_socket->sock, net_socket->buffer, &net_socket->peer_addr);
-        mvprintw((int)remote_player->y, (int)remote_player->x, "%s", remote_player->player_char);
     }
 }
 

@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
         handle_remote_player(&remote_player, &local_arena, &net_socket);
 
         mvprintw(local_arena.max_y - 2, 2, "Reconnect attempt: %d", net_socket.reconnect_attempts);
-
+        mvprintw((int)remote_player.y, (int)remote_player.x, "%s", remote_player.player_char);
         draw(&local_arena);
 
         nanosleep(&ts, NULL);
