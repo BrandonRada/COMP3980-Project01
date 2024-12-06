@@ -195,8 +195,8 @@ void draw(struct arena *local_arena)
     getmaxyx(stdscr, local_arena->window_old_x, local_arena->window_old_y);
 
     getmaxyx(stdscr, local_arena->max_y, local_arena->max_x);
-    local_arena->max_x = local_arena->max_x - 2;
-    local_arena->max_y = local_arena->max_y - 2;
+    local_arena->max_x--;
+    local_arena->max_y--;
     local_arena->min_x = 1;
     local_arena->min_y = 1;
 

@@ -121,7 +121,7 @@ void handle_keyboard_input(struct player *local_player, const struct arena *loca
         local_player->temp_y = local_player->y + 1;
         if(local_player->temp_y >= local_arena->max_y)
         {
-            local_player->temp_y = local_arena->max_y;
+            local_player->temp_y = local_arena->max_y - 1;
         }
     }
     else if(ch == KEY_LEFT)
@@ -137,7 +137,7 @@ void handle_keyboard_input(struct player *local_player, const struct arena *loca
         local_player->temp_x = local_player->x + 1;
         if(local_player->temp_x >= local_arena->max_x)
         {
-            local_player->temp_x = local_arena->max_x;
+            local_player->temp_x = local_arena->max_x - 1;
         }
     }
 }
