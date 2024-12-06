@@ -111,7 +111,7 @@ void handle_keyboard_input(struct player *local_player, const struct arena *loca
     if(ch == KEY_UP)
     {
         local_player->temp_y = local_player->y - 1;
-        if(local_player->temp_y < local_arena->min_y)
+        if(local_player->temp_y <= local_arena->min_y)
         {
             local_player->temp_y = local_arena->min_y;
         }
@@ -119,7 +119,7 @@ void handle_keyboard_input(struct player *local_player, const struct arena *loca
     else if(ch == KEY_DOWN)
     {
         local_player->temp_y = local_player->y + 1;
-        if(local_player->temp_y > local_arena->max_y)
+        if(local_player->temp_y >= local_arena->max_y)
         {
             local_player->temp_y = local_arena->max_y;
         }
@@ -127,7 +127,7 @@ void handle_keyboard_input(struct player *local_player, const struct arena *loca
     else if(ch == KEY_LEFT)
     {
         local_player->temp_x = local_player->x - 1;
-        if(local_player->temp_x < local_arena->min_x)
+        if(local_player->temp_x <= local_arena->min_x)
         {
             local_player->temp_x = local_arena->min_x;
         }
@@ -135,7 +135,7 @@ void handle_keyboard_input(struct player *local_player, const struct arena *loca
     else if(ch == KEY_RIGHT)
     {
         local_player->temp_x = local_player->x + 1;
-        if(local_player->temp_x > local_arena->max_x)
+        if(local_player->temp_x >= local_arena->max_x)
         {
             local_player->temp_x = local_arena->max_x;
         }
