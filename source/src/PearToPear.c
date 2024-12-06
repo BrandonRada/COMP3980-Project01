@@ -1,18 +1,4 @@
-//
-// Created by jonathan on 12/4/24.
-//
-
 #include "../include/PearToPear.h"
-
-#define PORT 8080
-#define BUFSIZE 1024
-#define FIVE 5
-#define SIX 6
-#define SEVEN 7
-#define ATE 8
-#define NINE 9
-
-// #define TEN 10
 
 int create_socket(void)
 {
@@ -20,7 +6,7 @@ int create_socket(void)
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if(sock < 0)
     {
-        mvprintw(4, 2, "Socket creation failed");
+        log_msg("Socket creation failed");
         exit(EXIT_FAILURE);
     }
 
@@ -28,11 +14,11 @@ int create_socket(void)
     flags = fcntl(sock, F_GETFL, 0);
     if(flags < 0 || fcntl(sock, F_SETFL, flags | O_NONBLOCK) < 0)
     {
-        mvprintw(4, 2, "Failed to set non-blocking mode");
+        log_msg("Failed to set non-blocking mode");
         exit(EXIT_FAILURE);
     }
 
-    mvprintw(4, 2, "Socket created and set to non-blocking mode!");
+    log_msg("Socket created and set to non-blocking mode!");
     return sock;
 }
 
@@ -46,7 +32,7 @@ void bind_socket(int sock, struct sockaddr_in *my_addr)
 
     if(bind(sock, (const struct sockaddr *)my_addr, sizeof(*my_addr)) < 0)
     {
-        mvprintw(FIVE, 2, "Bind failed");
+        log_msg("Bind failed");
         exit(EXIT_FAILURE);
     }
 
@@ -54,11 +40,11 @@ void bind_socket(int sock, struct sockaddr_in *my_addr)
     addr_len = sizeof(*my_addr);
     if(getsockname(sock, (struct sockaddr *)my_addr, &addr_len) == -1)
     {
-        mvprintw(FIVE, 2, "getsockname failed");
+        log_msg("getsockname failed");
         exit(EXIT_FAILURE);
     }
 
-    mvprintw(FIVE, 2, "Socket bound to address: %s, port: %u", inet_ntoa(my_addr->sin_addr), ntohs(my_addr->sin_port));
+    log_msg("Socket bound to address: %s, port: %u", inet_ntoa(my_addr->sin_addr), ntohs(my_addr->sin_port));
 }
 
 void configure_peer_addr(struct sockaddr_in *peer_addr, const char *ip_address)
@@ -68,13 +54,13 @@ void configure_peer_addr(struct sockaddr_in *peer_addr, const char *ip_address)
     peer_addr->sin_port   = htons(PORT);
     if(inet_pton(AF_INET, ip_address, &peer_addr->sin_addr) <= 0)
     {
-        mvprintw(SIX, 2, "Invalid address / Address not supported");
+        log_msg("Invalid address / Address not supported");
         exit(EXIT_FAILURE);
     }
-    mvprintw(SIX, 2, "Peer address configured to: %s, port: %u", ip_address, ntohs(peer_addr->sin_port));
+    log_msg("Peer address configured to: %s, port: %u", ip_address, ntohs(peer_addr->sin_port));
 }
 
-int receive_message(int sock, char *buffer, struct sockaddr_in *src_addr, const char *ip_address)
+int read_socket(int sock, char *buffer, struct sockaddr_in *src_addr, const char *ip_address)
 {
     socklen_t src_addr_len = sizeof(*src_addr);
     ssize_t   bytes_read;
@@ -90,20 +76,20 @@ int receive_message(int sock, char *buffer, struct sockaddr_in *src_addr, const 
 
         if(strcmp(inet_ntoa(src_addr->sin_addr), ip_address) == 0)
         {
-            mvprintw(SEVEN, 2, "Message received from %s:%u: %s", inet_ntoa(src_addr->sin_addr), ntohs(src_addr->sin_port), buffer);
+            log_msg("Message received from %s:%u: %s", inet_ntoa(src_addr->sin_addr), ntohs(src_addr->sin_port), buffer);
             return 0;
         }
     }
     return 1;
 }
 
-void send_message(int sock, const char *message, const struct sockaddr_in *peer_addr)
+void write_socket(int sock, const char *message, const struct sockaddr_in *peer_addr)
 {
     ssize_t sent_bytes;
-    mvprintw(ATE, 2, "Sending message: %s", message);
+    log_msg("Sending message: %s", message);
     sent_bytes = sendto(sock, message, strlen(message), 0, (const struct sockaddr *)peer_addr, sizeof(struct sockaddr_in));
     if(sent_bytes < 0)
     {
-        mvprintw(NINE, 2, "Message sending failed");
+        log_msg("Message sending failed");
     }
 }

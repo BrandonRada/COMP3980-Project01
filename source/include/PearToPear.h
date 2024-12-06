@@ -1,7 +1,3 @@
-//
-// Created by jonathan on 12/4/24.
-//
-
 #ifndef MAIN_PEARTOPEAR_H
 #define MAIN_PEARTOPEAR_H
 
@@ -18,6 +14,10 @@
 #ifdef __clang__
     #pragma clang diagnostic pop
 #endif
+
+#include "./Constants.h"
+#include "./LogToConsole.h"
+
 #include <arpa/inet.h>
 #include <curses.h>
 #include <fcntl.h>
@@ -30,10 +30,22 @@
 #include <termios.h>
 #include <unistd.h>
 
+struct network_socket
+{
+    const char *peer_addr_str;
+    int                sock;
+    struct sockaddr_in peer_addr;
+    struct sockaddr_in my_addr;
+    long               timer;
+    int                valid_msg;
+    int                reconnect_attempts;
+    char               buffer[BUFSIZE];
+};
+
 int  create_socket(void);
 void bind_socket(int sock, struct sockaddr_in *my_addr);
 void configure_peer_addr(struct sockaddr_in *peer_addr, const char *ip_address);
-int  receive_message(int sock, char *buffer, struct sockaddr_in *src_addr, const char *ip_address);
-void send_message(int sock, const char *message, const struct sockaddr_in *peer_addr);
+int  read_socket(int sock, char *buffer, struct sockaddr_in *src_addr, const char *ip_address);
+void write_socket(int sock, const char *message, const struct sockaddr_in *peer_addr);
 
 #endif    // MAIN_PEARTOPEAR_H

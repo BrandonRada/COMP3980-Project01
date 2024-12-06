@@ -1,1 +1,1 @@
-main src/main.c src/HandleInput.c src/PearToPear.c SDL2 ncurses curses m
+main src/main.c src/HandlePlayer.c src/PearToPear.c src/LogToConsole.c SDL2 ncurses curses m

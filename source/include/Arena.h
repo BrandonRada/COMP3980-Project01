@@ -14,6 +14,9 @@
 #ifdef __clang__
     #pragma clang diagnostic pop
 #endif
+
+#include "./Constants.h"
+
 #include <curses.h>
 #include <signal.h>
 #include <stdio.h>

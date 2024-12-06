@@ -1,7 +1,3 @@
-#include "../include/Arena.h"
-#include "../include/HandleInput.h"
-#include "../include/PearToPear.h"
-#include "../include/Player.h"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-default"
 #ifdef __clang__
@@ -15,48 +11,43 @@
 #ifdef __clang__
     #pragma clang diagnostic pop
 #endif
+
+#include "../include/Arena.h"
+#include "../include/Constants.h"
+#include "../include/HandlePlayer.h"
+#include "../include/LogToConsole.h"
 #include <arpa/inet.h>
 #include <curses.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 
-#define NANO 1000000000
-#define FPS 60
-#define FIXED_UPDATE (NANO / FPS)
-#define BUFSIZE 1024
-#define TEN 10
-#define DEFAULT_PEER_ADDR "255.255.255.255"
-
 int main(int argc, char *argv[])
 {
-    struct player       local_player;
-    struct player       remote_player;
-    struct arena        local_arena;
-    struct timespec     ts;
-    SDL_GameController *controller = NULL;
-    SDL_Event           event;
+    int                   opt;
+    struct player         local_player;
+    struct player         remote_player;
+    struct arena          local_arena;
+    struct timespec       ts;
+    struct network_socket net_socket = {DEFAULT_PEER_ADDR, 0, {0}, {0}, 0, 0, 0, ""};
+    SDL_GameController   *controller = NULL;
+    SDL_Event             event;
 
-    int                opt;
-    const char        *peer_addr_str = DEFAULT_PEER_ADDR;
-    int                sock;
-    struct sockaddr_in peer_addr;
-    struct sockaddr_in my_addr;
-    char               buffer[BUFSIZE];
-    long               timer;
-    int                valid_msg;
-    int                reconnect_attempts = 0;
+    // Open new terminal for logging
+    open_console();
     initscr();
     refresh();
     keypad(stdscr, TRUE);
+    getmaxyx(stdscr, local_arena.max_y, local_arena.max_x);
 
     while((opt = getopt(argc, argv, "a:")) != -1)
     {
         if(opt == 'a')
         {
-            peer_addr_str = optarg;
+            net_socket.peer_addr_str = optarg;
         }
     }
 
@@ -65,18 +56,18 @@ int main(int argc, char *argv[])
     ts.tv_sec  = FIXED_UPDATE / NANO;
     ts.tv_nsec = FIXED_UPDATE % NANO;
 
-    getmaxyx(stdscr, local_arena.max_y, local_arena.max_x);
     local_player.player_char  = "+";
     local_player.x            = (double)local_arena.max_x / 2;
     local_player.y            = (double)local_arena.max_y / 2;
     remote_player.player_char = "O";
     remote_player.x           = -1;
     remote_player.y           = -1;
-    timer                     = 0;
-    valid_msg                 = 0;
+    net_socket.timer          = 0;
+    net_socket.valid_msg      = 0;
+
     if(SDL_Init(SDL_INIT_GAMECONTROLLER) != 0)
     {
-        mvprintw(1, 1, "SDL_Init Error: %s\n", SDL_GetError());
+        log_msg("SDL_Init Error: %s\n", SDL_GetError());
         return EXIT_FAILURE;
     }
 
@@ -85,100 +76,41 @@ int main(int argc, char *argv[])
         controller = SDL_GameControllerOpen(0);
         if(!controller)
         {
-            mvprintw(1, 1, "Could not open game controller: %s\n", SDL_GetError());
+            log_msg("Could not open game controller: %s\n", SDL_GetError());
             SDL_Quit();
             return EXIT_FAILURE;
         }
     }
     else
     {
-        mvprintw(1, 1, "No game controllers connected.\n");
+        log_msg("No game controllers connected.\n");
     }
 
-    sock = create_socket();
-    bind_socket(sock, &my_addr);
-    configure_peer_addr(&peer_addr, peer_addr_str);
+    net_socket.sock = create_socket();
+    bind_socket(net_socket.sock, &net_socket.my_addr);
+    configure_peer_addr(&net_socket.peer_addr, net_socket.peer_addr_str);
 
     mvprintw((int)local_player.y, (int)local_player.x, "%s", local_player.player_char);
     getmaxyx(stdscr, local_arena.window_old_y, local_arena.window_old_x);
     curs_set(0);
+
     while(1)
     {
-        const char *token_x = NULL;
-        const char *token_y = NULL;
-        char       *saveptr = NULL;
-
         draw(&local_arena);
-        timer++;
-        mvprintw(local_arena.max_y - 1, 2, "Timer: %ld", timer / FPS);
-        handle_input(&controller, &event, &local_player, &local_arena);
+        net_socket.timer++;
+        mvprintw(local_arena.max_y - 1, 2, "Timer: %ld", net_socket.timer / FPS);
+        handle_local_player(&controller, &event, &local_player, &local_arena);
 
-        if(valid_msg == 0 || timer % FPS == 0)
+        if(net_socket.valid_msg == 0 || net_socket.timer % FPS == 0)
         {
-            snprintf(buffer, sizeof(buffer), "%d:%d", (int)local_player.x, (int)local_player.y);
-            send_message(sock, buffer, &peer_addr);
+            snprintf(net_socket.buffer, sizeof(net_socket.buffer), "%d:%d", (int)local_player.x, (int)local_player.y);
+            write_socket(net_socket.sock, net_socket.buffer, &net_socket.peer_addr);
         }
 
-        // Receive the remote player's position
-        valid_msg = receive_message(sock, buffer, &peer_addr, peer_addr_str);
+        handle_remote_player(&remote_player, &local_arena, &net_socket);
 
-        if(valid_msg == 0)
-        {
-            // Extract x and y values from the buffer using strtok_r
-            token_x = strtok_r(buffer, ":", &saveptr);
-            token_y = strtok_r(NULL, ":", &saveptr);
-            // update remote_player's position
-            if(token_x != NULL && token_y != NULL)
-            {
-                remote_player.x = (int)strtol(token_x, NULL, TEN);
-                remote_player.y = (int)strtol(token_y, NULL, TEN);
-            }
-            reconnect_attempts = 0;    // Reset reconnect attempts on successful communication
-        }
-        else if(timer % FPS == 0)
-        {
-            reconnect_attempts++;
-            if(strcmp(peer_addr_str, DEFAULT_PEER_ADDR) != 0 && reconnect_attempts == 2)
-            {
-                close(sock);
-                sock = create_socket();
-                bind_socket(sock, &my_addr);
-                configure_peer_addr(&peer_addr, peer_addr_str);
-            }
-            if(strcmp(peer_addr_str, DEFAULT_PEER_ADDR) == 0 || reconnect_attempts > 4)
-            {
-                if(remote_player.x < 0 || remote_player.y < 0)
-                {
-                    remote_player.x = (double)local_arena.max_x / 3;
-                    remote_player.y = (double)local_arena.max_y / 3;
-                }
+        mvprintw(local_arena.max_y - 2, 2, "Reconnect attempt: %d", net_socket.reconnect_attempts);
 
-                // move remote player randomly
-                remote_player.x = (int)(remote_player.x + (rand() % 3 - 1)) % local_arena.max_x;
-                remote_player.y = (int)(remote_player.y + (rand() % 3 - 1)) % local_arena.max_y;
-                if(remote_player.x < local_arena.min_x)
-                {
-                    remote_player.x = local_arena.min_x;
-                }
-                else if(remote_player.x > local_arena.max_x)
-                {
-                    remote_player.x = local_arena.max_x;
-                }
-                if(remote_player.y < local_arena.min_y)
-                {
-                    remote_player.y = local_arena.min_y;
-                }
-                else if(remote_player.y > local_arena.max_y)
-                {
-                    remote_player.y = local_arena.max_y;
-                }
-            }
-            snprintf(buffer, sizeof(buffer), "%d:%d", (int)local_player.x, (int)local_player.y);
-            send_message(sock, buffer, &peer_addr);
-        }
-
-        mvprintw(local_arena.max_y - 2, 2, "Reconnect attempt: %d", reconnect_attempts);
-        mvprintw((int)remote_player.y, (int)remote_player.x, "%s", remote_player.player_char);
         draw(&local_arena);
 
         nanosleep(&ts, NULL);
