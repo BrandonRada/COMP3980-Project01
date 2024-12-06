@@ -14,14 +14,13 @@
 #ifdef __clang__
     #pragma clang diagnostic pop
 #endif
+#include <arpa/inet.h>
 #include <curses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include <fcntl.h>
-#include <netinet/in.h>
 
 #define NANO 1000000000
 #define FPS 60
