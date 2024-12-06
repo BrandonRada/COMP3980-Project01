@@ -17,5 +17,5 @@ void handle_keyboard_input(struct player *local_player, const struct arena *loca
 void get_joystick_distance(SDL_GameController *controller, double *distance);
 void get_joystick_angle(SDL_GameController *controller, int *angle, const double *distance);
 void handle_bounds(struct player *local_player, const struct arena *local_arena);
-void handle_remote_player(struct player *remote_player, struct arena *local_arena, struct network_socket *net_socket);
+void handle_remote_player(struct player *remote_player, const struct arena *local_arena, struct network_socket *net_socket);
 #endif    // MAIN_HANDLEPLAYER_H

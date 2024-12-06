@@ -1,6 +1,6 @@
 #include "../include/HandlePlayer.h"
 
-void handle_remote_player(struct player *remote_player, struct arena *local_arena, struct network_socket *net_socket)
+void handle_remote_player(struct player *remote_player, const struct arena *local_arena, struct network_socket *net_socket)
 {
     const char *token_x = NULL;
     const char *token_y = NULL;
