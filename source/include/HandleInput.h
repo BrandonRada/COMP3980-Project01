@@ -14,4 +14,5 @@ void handle_controller_input(SDL_GameController *controller, struct player *loca
 void handle_keyboard_input(struct player *local_player, const struct arena *local_arena);
 void get_joystick_distance(SDL_GameController *controller, double *distance);
 void get_joystick_angle(SDL_GameController *controller, int *angle, const double *distance);
+void handle_out_of_bounds(struct player *local_player, const struct arena *local_arena);
 #endif    // MAIN_HANDLEINPUT_H

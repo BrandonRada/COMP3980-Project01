@@ -49,6 +49,8 @@ void handle_input(SDL_GameController **controller, SDL_Event *event, struct play
     {
         handle_keyboard_input(local_player, local_arena);
     }
+    // Handle if the window changed and the player is now out of bounds
+    handle_out_of_bounds(local_player, local_arena);
 
     // Update player's position
     mvprintw((int)local_player->y, (int)local_player->x, " ");
@@ -173,5 +175,30 @@ void get_joystick_angle(SDL_GameController *controller, int *angle, const double
     else if(*angle < 0)
     {
         *angle += D_MAX;
+    }
+}
+
+// This is used to check no matter if the move was made or not, check the updated temp vals, then mover the player back inside the border depending on where they are outside the border.
+void handle_out_of_bounds(struct player *local_player, const struct arena *local_arena)
+{
+    // If to the left of left border
+    if(local_player->temp_x < local_arena->min_x)
+    {
+        local_player->temp_x = local_arena->min_x + 1;
+    }
+    // If to the right of right border
+    if(local_player->temp_x > local_arena->max_x)
+    {
+        local_player->temp_x = local_arena->max_x - 1;
+    }
+    // If above the top border
+    if(local_player->temp_y < local_arena->min_y)
+    {
+        local_player->temp_y = local_arena->min_y + 1;
+    }
+    // If below bottom border
+    if(local_player->temp_y > local_arena->max_y)
+    {
+        local_player->temp_y = local_arena->max_y - 1;
     }
 }
