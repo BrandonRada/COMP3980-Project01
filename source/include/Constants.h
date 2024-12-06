@@ -8,8 +8,8 @@
 #define DEFAULT_PEER_ADDR "255.255.255.255"
 #define PORT 8080
 #define CONTROLLER_JOYSTICK_MAX 32767
-#define D_MAX 360
-#define D_HALF 180
+#define ANGLE_MAX 360
+#define ANGLE_HALF 180
 #define THRESH 0.25
 #define TR 45
 #define TL 135
