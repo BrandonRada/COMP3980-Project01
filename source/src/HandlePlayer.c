@@ -207,8 +207,8 @@ void get_joystick_distance(SDL_GameController *controller, double *distance)
     int x = abs(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX));
     int y = abs(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY));
 
-    double norm_x = ((double)x / (double)SDL_CONTROLLER_AXIS_MAX);
-    double norm_y = ((double)y / (double)SDL_CONTROLLER_AXIS_MAX);
+    double norm_x = ((double)x / (double)CONTROLLER_JOYSTICK_MAX);
+    double norm_y = ((double)y / (double)CONTROLLER_JOYSTICK_MAX);
 
     *distance = (norm_x > norm_y) ? norm_x : norm_y;
 }
@@ -219,8 +219,8 @@ void get_joystick_angle(SDL_GameController *controller, int *angle, const double
     int x = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX);
     int y = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY);
 
-    double norm_x = ((double)x / (double)SDL_CONTROLLER_AXIS_MAX);
-    double norm_y = -((double)y / (double)SDL_CONTROLLER_AXIS_MAX);
+    double norm_x = ((double)x / (double)CONTROLLER_JOYSTICK_MAX);
+    double norm_y = -((double)y / (double)CONTROLLER_JOYSTICK_MAX);
 
     double radians = atan2(norm_y, norm_x);
     *angle         = (int)(radians * (D_HALF / M_PI));
